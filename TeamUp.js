@@ -14,11 +14,12 @@ $(function(){
     function constructDate(){
         let newDate = new Date();
         let weekday = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-        let month = ["January", "Febudary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        let month = ["January", "Febuary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
         let date = weekday[newDate.getDay() - 1] + " ";
         date += newDate.getDate() + getOrdinal(newDate.getDate()) + " ";
-        date += month[newDate.getMonth()];
+        date += month[newDate.getMonth()] + " ";
+        date += newDate.getFullYear();
 
         return date;
     }
