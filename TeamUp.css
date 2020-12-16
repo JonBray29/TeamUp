@@ -1,12 +1,13 @@
 body {
     font-family: 'Quicksand', sans-serif;
-    color: black;
+    color: white;
     display: flex;
     flex-direction: column;
     text-align: center;
     justify-content: center;
     height: 100vh;
     width: 100%;
+    background-color: #4f4f4f;
     background-size: cover;
     background-position: center center;
 }
