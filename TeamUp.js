@@ -1,15 +1,11 @@
-import { Calendar } from '@fullcalendar/core';
-import timeGridPlugin from '@fullcalendar/timegrid';
-
 $(function(){
     //Start the time
     showTimeAndDate();
 
-    var calendar = new Calendar($("#calendar"),{
-        plugins: [timeGridPlugin],
+    var calendar = new FullCalendar.Calendar($("#calendar"),{
         initialView: "timeGridWeek"
     });
-    calendar.Render();
+    calendar.render();
 
     //Gets the current time and date and displays it, updates it every second.
     function showTimeAndDate(){
