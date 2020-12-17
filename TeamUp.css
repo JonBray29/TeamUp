@@ -17,3 +17,15 @@ body {
 #date {
     font-size: 2vw;
 }
+#menu-buttons {
+    position: absolute;
+    top: 3vh;
+    right: 1vw;
+}
+#notifications {
+    width: 2vw;
+    margin-right: 1vw;
+}
+#settings {
+    width: 2vw;
+}
