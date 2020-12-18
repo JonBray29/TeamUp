@@ -2,10 +2,17 @@ $(function(){
     //Start the time
     showTimeAndDate();
 
-    var calendar = new FullCalendar.Calendar($("#calendar"),{
-        initialView: "timeGridWeek"
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek'
     });
     calendar.render();
+
+    // var calendarEl = document.getElementById('calendar');
+    // var calendar = new FullCalendar.Calendar(calendarEl, {
+    //     initialView: 'timeGridWeek'
+    // });
+    // calendar.render();
 
     //Gets the current time and date and displays it, updates it every second.
     function showTimeAndDate(){
