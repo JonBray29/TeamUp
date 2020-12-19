@@ -1,3 +1,4 @@
+/* TeamUp element styles */
 body {
     font-family: 'Quicksand', sans-serif;
     color: white;
@@ -34,6 +35,7 @@ body {
     width: 50vw;
     height: 60vh;
 }
+/* Calendar styles */
 .fc .fc-toolbar-title {
     font-size: 1.3em;
 }
@@ -51,5 +53,13 @@ body {
     font-size: 0.9em;
 }
 .fc .fc-col-header-cell-cushion {
-    word-spacing: 30px;
+    word-spacing:50px;
+}
+.fc .fc-timegrid-slot-minor {
+    border-top-style: solid;
+    border-top-color:  rgba(255, 255, 255, 0.25);
+}
+:root {
+    --fc-today-bg-color: rgba(255, 255, 255, 0.15);
+    /* --fc-now-indicator-color: rgb(255, 255, 255);   Style for now indicator if chosen to be used  */
 }

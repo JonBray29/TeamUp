@@ -1,18 +1,7 @@
 $(function(){
     //Start the time
     showTimeAndDate();
-
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridWeek'
-    });
-    calendar.render();
-
-    // var calendarEl = document.getElementById('calendar');
-    // var calendar = new FullCalendar.Calendar(calendarEl, {
-    //     initialView: 'timeGridWeek'
-    // });
-    // calendar.render();
+    showCalendar();
 
     //Gets the current time and date and displays it, updates it every second.
     function showTimeAndDate(){
@@ -43,5 +32,28 @@ $(function(){
             case 3: return "rd";
             default: return "th";
         }
+    }
+    function showCalendar(){
+        let date = new Date();
+
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            locale: 'gb',
+            firstDay: 1,
+            scrollTime: date.toLocaleTimeString(),
+            slotLabelFormat: {
+                hour: 'numeric',
+                minute: '2-digit',
+                meridiam: false
+            },
+            dayHeaderFormat: {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'numeric',
+                omitCommas: true
+            }
+        });
+        calendar.render();
     }
 })
