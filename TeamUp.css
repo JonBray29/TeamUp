@@ -29,10 +29,20 @@ body {
 }
 #notifications {
     width: 2vw;
-    margin-right: 1vw;
+    margin-right: 0.5vw;
+}
+#notifications:hover {
+    -webkit-animation:swing 2s linear infinite;
+    -moz-animation:swing 2s linear infinite;
+    animation:swing 2s linear infinite;
 }
 #settings {
     width: 2vw;
+}
+#settings:hover {
+    -webkit-animation:spin 6s linear infinite;
+    -moz-animation:spin 6s linear infinite;
+    animation:spin 6s linear infinite;
 }
 #calendar {
     width: 50vw;
@@ -41,24 +51,50 @@ body {
 #todo-list-div {
     position: absolute;
     width: 20vw;
-    height: 90vh;
-    top: 3vh;
+    height: 95vh;
+    top: 1vh;
     left: 1vw;
-    border: solid white 0.5px;
 }
 #todo-list-div h1 {
     text-align: left;
+    margin: 0;
     margin-left: 1vw;
-    width: 6.25vw;
-    margin-top: 0;
 }
 #todo-list-div h1 span {
     border-bottom: solid 0.5px white;
+    font-size: 2vw;
+}
+#todo-scrollable-list {
+    width: 20vw;
+    height: 88vh;
+    overflow: scroll;
+    direction: rtl;
+
+}
+#todo-scrollable-list ul {
+    margin: 0;
+    padding: 0;
+    padding-left: 1vw;
+}
+#todo-scrollable-list li {
+    cursor: pointer;
+    list-style-type: none;
+    padding: 0.5vw 3vw 0.5vw 0.5vw;
+    text-align: left;
+    border: solid 0.5px white;
+    margin-top: 0.5vw;
+}
+#todo-scrollable-list li:hover {
+    background-color: rgba(255, 255, 255, 0.15);
 }
 /* Calendar styles */
 .fc .fc-toolbar-title {
     font-size: 1.3em;
 }
+.fc .fc-button-primary:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: white;
+  }
 .fc .fc-button:disabled {
     background-color: transparent;
     border-color: white;
@@ -82,4 +118,32 @@ body {
 :root {
     --fc-today-bg-color: rgba(255, 255, 255, 0.15);
     /* --fc-now-indicator-color: rgb(255, 255, 255);   Style for now indicator if chosen to be used  */
+}
+/* Animations */
+@-moz-keyframes spin { 
+    100% { -moz-transform: rotate(360deg); } 
+}
+@-webkit-keyframes spin { 
+    100% { -webkit-transform: rotate(360deg); } 
+}
+@keyframes spin { 
+    100% { transform:rotate(360deg); } 
+}
+@-moz-keyframes swing {
+    25% { -moz-transform: rotate(10deg)}
+    50% { -moz-transform: rotate(0deg)}
+    75% { -mox-transform: rotate(-10deg)}
+    100% { -mox-transform: rotate(0deg)}
+}
+@-webkit-keyframes swing {
+    25% { -webkit-transform: rotate(10deg)}
+    50% { -webkit-transform: rotate(0deg)}
+    75% { -webkit-transform: rotate(-10deg)}
+    100% { -webkit-transform: rotate(0deg)}
+}
+@keyframes swing {
+    25% { transform: rotate(10deg)}
+    50% { transform: rotate(0deg)}
+    75% { transform: rotate(-10deg)}
+    100% { transform: rotate(0deg)}
 }
