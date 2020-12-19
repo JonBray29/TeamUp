@@ -1,4 +1,7 @@
 /* TeamUp element styles */
+html, body {
+    overflow: hidden;
+}
 body {
     font-family: 'Quicksand', sans-serif;
     color: white;
@@ -34,6 +37,23 @@ body {
 #calendar {
     width: 50vw;
     height: 60vh;
+}
+#todo-list-div {
+    position: absolute;
+    width: 20vw;
+    height: 90vh;
+    top: 3vh;
+    left: 1vw;
+    border: solid white 0.5px;
+}
+#todo-list-div h1 {
+    text-align: left;
+    margin-left: 1vw;
+    width: 6.25vw;
+    margin-top: 0;
+}
+#todo-list-div h1 span {
+    border-bottom: solid 0.5px white;
 }
 /* Calendar styles */
 .fc .fc-toolbar-title {
