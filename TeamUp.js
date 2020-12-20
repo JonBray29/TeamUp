@@ -14,10 +14,10 @@ $(function(){
     }
     function constructDate(){
         let newDate = new Date();
-        let weekday = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        let weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         let month = ["January", "Febuary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
-        let date = weekday[newDate.getDay() - 1] + " ";
+        let date = weekday[newDate.getDay()] + " ";
         date += newDate.getDate() + getOrdinal(newDate.getDate()) + " ";
         date += month[newDate.getMonth()] + " ";
         date += newDate.getFullYear();
@@ -33,6 +33,7 @@ $(function(){
             default: return "th";
         }
     }
+    //Show calendar on page 
     function showCalendar(){
         let date = new Date();
 
@@ -55,5 +56,39 @@ $(function(){
             }
         });
         calendar.render();
+    }
+    //Listen for click on add new task
+    $("#new-task").click(function(){
+        $("#new-task").removeClass("new-task");
+        $("#new-task").removeClass("new-task-blink");
+        $("#new-task").addClass("new-task-entered");
+    }); 
+    //If enter key is pressed when entering a new task
+    $("#new-task").on('keypress', function(e){
+        if(e.which == 13){
+            e.preventDefault();
+            if($.trim($("#new-task").text()) != ""){
+                addTask();
+            }
+            $("#new-task").html("");
+        }
+    })
+    //On focus out of new task change class
+    $("#new-task").focusout(function(){
+        if($.trim($("#new-task").text()) != ""){
+            $("#new-task").addClass("new-task-blink");
+        }
+        else{
+            $("#new-task").html("");
+            $("#new-task").removeClass("new-task-entered");
+            $("#new-task").addClass("new-task");
+        }
+    });
+    //Add task to list
+    function addTask(){
+        let newTask = $("#new-task").html();
+        $("#todo-list").append("<li class=\"list-item\">" + newTask + "</li>")
+
+        //ALSO ADD THE TASK TO THE WEBSERVER TO ADD TO DATABASE AND OTHER CLIENTS
     }
 })
