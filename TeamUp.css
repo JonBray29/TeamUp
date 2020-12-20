@@ -79,7 +79,7 @@ body {
 #todo-scrollable-list li {
     cursor: pointer;
     list-style-type: none;
-    padding: 0.5vw 3vw 0.5vw 0.5vw;
+    padding: 0.5vw 0.5vw;
     text-align: left;
     border: solid 0.5px rgba(255, 255, 255, 0.5);
     margin-top: 0.5vw;
@@ -103,6 +103,9 @@ body {
 .new-task-blink::after{
     content: "...";
     animation:blink 1s linear infinite;
+}
+.list-item.checked {
+    text-decoration: line-through;
 }
 [contenteditable] {
     outline: 0px solid transparent;

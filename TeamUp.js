@@ -91,4 +91,25 @@ $(function(){
 
         //ALSO ADD THE TASK TO THE WEBSERVER TO ADD TO DATABASE AND OTHER CLIENTS
     }
+    //On list item click strikethrough the task
+    $("#todo-list").click(function(event){
+        let target = $(event.target);
+        if(target.hasClass("list-item")){
+            target.toggleClass("checked");
+            var removeItem;
+
+            if(target.hasClass("checked")){
+                target.fadeTo(10000, 0);
+                removeItem = setTimeout(function(){ target.remove() }, 10000);
+
+                removeItem;
+            }
+            else if(!target.hasClass("checked")){
+                //STOP FADE AND STOP REMOVAL
+                
+                target.stop(true);
+                clearTimeout(removeItem);
+            }
+        }
+    });
 })
