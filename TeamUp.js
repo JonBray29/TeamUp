@@ -1,4 +1,12 @@
 $(function(){
+    //Open modal dialog
+    $("#login-modal").iziModal({
+        overlayClose: false,
+        overlayColor: 'rgba(0, 0, 0, 0.6)'
+    });
+
+    $("#login-modal").iziModal("open");
+
     //Start the time
     showTimeAndDate();
     showCalendar();
@@ -26,7 +34,7 @@ $(function(){
     }
     function getOrdinal(date){
         if(date > 3 && date < 21) return "th";
-        switch (d % 10){
+        switch (date % 10){
             case 1: return "st";
             case 2: return "nd";
             case 3: return "rd";
@@ -89,26 +97,22 @@ $(function(){
         let newTask = $("#new-task").html();
         $("#todo-list").append("<li class=\"list-item\">" + newTask + "</li>")
 
-        //ALSO ADD THE TASK TO THE WEBSERVER TO ADD TO DATABASE AND OTHER CLIENTS
+        //ALSO ADD THE TASK TO THE WEBSERVER TO ADD TO DATABASE AND OTHER CLIENTS ---------------------------
     }
+    var itemArray = [];
     //On list item click strikethrough the task
     $("#todo-list").click(function(event){
         let target = $(event.target);
         if(target.hasClass("list-item")){
-            target.toggleClass("checked");
-            var removeItem;
-
+            target.addClass("checked");
+            
             if(target.hasClass("checked")){
-                target.fadeTo(10000, 0);
-                removeItem = setTimeout(function(){ target.remove() }, 10000);
-
-                removeItem;
+                target.fadeTo(5000, 0.5);
+                let removeItem = setTimeout(function(){ target.remove() }, 5000);  //Mark task as complete in DB ------------
+                itemArray.push(removeItem);
             }
             else if(!target.hasClass("checked")){
-                //STOP FADE AND STOP REMOVAL
-                
-                target.stop(true);
-                clearTimeout(removeItem);
+                //Cancel task completion -----------------------------------------
             }
         }
     });
