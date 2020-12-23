@@ -119,9 +119,7 @@ body {
 }
 #login-modal .iziModal-content header {
     background: black;
-    margin-bottom: 1vw;
     overflow: hidden;
-    /* border-radius: 3vw 3vw 0 0; ----------------------- */ 
     width: 100%;
 }
 #login-modal .iziModal-content header a {
@@ -146,7 +144,9 @@ body {
     padding-right: 3vw;
     padding-left: 3vw;
 }
-#login-modal .iziModal-content section input:not([type="checkbox"]), #login-modal .iziModal-content section button {
+#login-modal .iziModal-content section select,
+#login-modal .iziModal-content section input:not([type="checkbox"]), 
+#login-modal .iziModal-content section button {
     width: 100%;
     border: 1px solid white;
     margin-bottom: 3vh;

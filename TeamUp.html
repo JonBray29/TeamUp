@@ -49,15 +49,14 @@
     <!-- Login -->
     <div id="login-modal" data-izimodal-group="group1">
         <header>
-            <a href="" id="signin" class="active">Sign In</a>
-            <a href="" id="signup">Sign Up</a>
+            <a href="" class="active">Sign In</a>
+            <a href="">Sign Up</a>
         </header>
         <section>
-            <label for="login-username">Username:</label>
-            <input type="text" id="login-username" placeholder="Enter Username..." />
+            <label for="login-email">Email:</label>
+            <input type="email" id="login-username" placeholder="Enter Username..." />
             <label for="login-password">Password:</label>
             <input type="password" id="login-password" placeholder="Enter Password..." />
-
 
             <div class="pretty p-icon p-smooth check-div">
                 <input type="checkbox" id="login-remember-me" />
@@ -67,22 +66,15 @@
                 </div>
             </div>
 
-
             <footer>
                 <button class="submit hvr-grow">Log In</button>
             </footer>
         </section>
         <section class="hide">
-            <label for="signup-username">Username:</label>
-            <input type="text" id="signup-username" placeholder="Enter Username..." />
             <label for="signup-email">Email:</label>
             <input type="email" id="signup-email" placeholder="Enter Email..." />
-            <label for="signup-team">Select Team:</label>
-            <select id="signup-team">
-                <option value="" disabled selected>Select Team:</option>
-            </select>
-            <label for="signup-create-team" class="hide">Create New Team:</label>
-            <input type="text" id="signup-team" placeholder="Enter new team name..." class="hide" />
+            <label for="signup-team">Team Name:</label>
+            <input type="text" id="signup-team" placeholder="Enter team name..." >
 
             <div class="pretty p-icon p-smooth check-div">
                 <input type="checkbox" id="signup-team-check" />
@@ -91,13 +83,13 @@
                     <label class="check-label">Create new team?</label>
                 </div>
             </div>
-
+            <br>
             <label for="signup-password">Password:</label>
             <input type="password" id="signup-password" placeholder="Enter Password..." />
             <label for="signup-password">Confirm Password:</label>
             <input type="password" id="signup-password" placeholder="Confirm Password..." />
             <footer>
-                <button class="submit">Sign Up</button>
+                <button class="submit hvr-grow">Sign Up</button>
             </footer>
         </section>
     </div>

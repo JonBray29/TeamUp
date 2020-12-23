@@ -4,8 +4,15 @@ $(function(){
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.6)'
     });
-
     $("#login-modal").iziModal("open");
+
+    $("#login-modal").on("click", "header a", function(e){
+        e.preventDefault();
+        let index = $(this).index();
+
+        $(this).addClass('active').siblings('a').removeClass('active');
+        $(this).parents("div").find("section").eq(index).removeClass('hide').siblings('section').addClass('hide');
+    });
 
     //Start the time
     showTimeAndDate();
