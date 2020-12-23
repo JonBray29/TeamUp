@@ -7,14 +7,17 @@
 
     <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <!-- Fonts -->
+    <!-- Fonts and icons-->
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300&display=swap" rel="stylesheet">
+    <link href="node_modules/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
     <!-- Calendar -->
     <link href="node_modules/fullcalendar/main.css" rel="stylesheet" />
     <script src="node_modules/fullcalendar/main.min.js"></script>
     <!-- Modal dialogs -->
     <link href="node_modules/izimodal/css/iziModal.min.css" rel="stylesheet" />
     <script src="node_modules/izimodal/js/iziModal.min.js"></script>
+    <!-- Pretty Checkbox -->
+    <link href="node_modules/pretty-checkbox/dist/pretty-checkbox.min.css" rel="stylesheet" />
     <!-- Application stylesheet and script -->
     <script src="TeamUp.js"></script>
     <link rel="stylesheet" href="TeamUp.css">
@@ -55,14 +58,18 @@
             <label for="login-password">Password:</label>
             <input type="password" id="login-password" placeholder="Enter Password..." />
 
-            <div>
+
+            <div class="pretty p-icon p-smooth check-div">
                 <input type="checkbox" id="login-remember-me" />
-                <span class="custom-checkbox"></span>
-                <label for="login-remember-me">Remember me?</label>
+                <div class="state">
+                    <i class="icon mdi mdi-check"></i>
+                    <label class="check-label">Remember me?</label>
+                </div>
             </div>
 
+
             <footer>
-                <button class="submit">Log In</button>
+                <button class="submit hvr-grow">Log In</button>
             </footer>
         </section>
         <section class="hide">
@@ -77,9 +84,13 @@
             <label for="signup-create-team" class="hide">Create New Team:</label>
             <input type="text" id="signup-team" placeholder="Enter new team name..." class="hide" />
 
-            <input type="checkbox" id="signup-team-check"  />
-            <span class="custom-checkbox"></span>
-            <label for="login-remember-me">Create New Team:</label>
+            <div class="pretty p-icon p-smooth check-div">
+                <input type="checkbox" id="signup-team-check" />
+                <div class="state">
+                    <i class="icon mdi mdi-check"></i>
+                    <label class="check-label">Create new team?</label>
+                </div>
+            </div>
 
             <label for="signup-password">Password:</label>
             <input type="password" id="signup-password" placeholder="Enter Password..." />

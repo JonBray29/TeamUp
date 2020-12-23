@@ -134,13 +134,17 @@ body {
     height: 8vh;
     text-align: center;
     line-height: 8vh;
+    font-size: 1.5vw;
+    text-decoration: none;
 }
 #login-modal .iziModal-content header a.active{
     background: rgba(79, 79, 79, 1);
     color: white;
 }
 #login-modal .iziModal-content section{
-    padding: 30px;
+    padding-top: 3vw;
+    padding-right: 3vw;
+    padding-left: 3vw;
 }
 #login-modal .iziModal-content section input:not([type="checkbox"]), #login-modal .iziModal-content section button {
     width: 100%;
@@ -156,26 +160,23 @@ body {
 #login-modal .iziModal-content section input:focus{
     border-color: rgba(255, 255, 255, 1);
 }
-#login-modal .iziModal-content section label {
+#login-modal .iziModal-content section label:not(.check-label) {
     width: 100%;
     font-size: 2vw;
+    text-align: left;
 }
-#login-modal .iziModal-content section input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
+.check-div {
+    margin-bottom: 2vw;
+}
+#login-modal .iziModal-content section footer{
+    overflow: hidden;
+    padding: 1vw;
+}
+#login-modal .iziModal-content section button{
     cursor: pointer;
-    height: 0;
-    width: 0;
+    background: rgba(255, 255, 255, 0.15);
+    width: 50%;
 }
-.custom-checkbox {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 2vw;
-    width: 2vw;
-    background-color: #eee;
-}
-
 /* Calendar styles */
 .fc .fc-toolbar-title {
     font-size: 1.3em;
@@ -214,6 +215,25 @@ body {
 a:link a:visited a:active {
     text-decoration: none;
 }
+/* Hover.css effects */
+/* Grow */
+.hvr-grow {
+    display: inline-block;
+    vertical-align: middle;
+    transform: translateZ(0);
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+    backface-visibility: hidden;
+    -moz-osx-font-smoothing: grayscale;
+    transition-duration: 0.3s;
+    transition-property: transform;
+}
+
+.hvr-grow:hover,
+.hvr-grow:focus,
+.hvr-grow:active {
+    transform: scale(1.1);
+}
+
 /* Animations */
 @-moz-keyframes spin { 
     100% { -moz-transform: rotate(360deg); } 
