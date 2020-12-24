@@ -127,7 +127,7 @@ body {
     float: left;
     width: 50%;
     padding: 0;
-    background: rgb(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.15);
     color: white;
     height: 8vh;
     text-align: center;
@@ -148,7 +148,6 @@ body {
 #login-modal .iziModal-content section input:not([type="checkbox"]), 
 #login-modal .iziModal-content section button {
     width: 100%;
-    border: 1px solid white;
     margin-bottom: 3vh;
     padding: 0.5vw 0.5vw;
     font-size: 2vw;
@@ -165,7 +164,7 @@ body {
     font-size: 2vw;
     text-align: left;
 }
-.check-div {
+.modal-sub-div {
     margin-bottom: 2vw;
 }
 #login-modal .iziModal-content section footer{
@@ -176,6 +175,77 @@ body {
     cursor: pointer;
     background: rgba(255, 255, 255, 0.15);
     width: 50%;
+}
+/* Settings dialog */
+#settings-dialog {
+    background: rgba(79, 79, 79, 1);
+}
+#settings-dialog .iziModal-content header {
+    overflow: hidden;
+    width: 100%;
+}
+#settings-dialog .iziModal-content header h1 {
+    display: block;
+    width: 100%;
+    color: white;
+    height: 4vh;
+    text-align: center;
+    line-height: 4vh;
+    font-size: 3vw;
+}
+#settings-dialog .iziModal-content header i {
+    background: rgba(79, 79, 79, 1);
+    position: absolute;
+    right: -0.5vw;
+    top: -0.5vw;
+    font-size: 2vw;
+    width: 2vw;
+    height: 2vw;
+    border-radius: 1vw;
+    cursor: pointer;
+    text-align: center;
+    line-height: 2vw;
+}
+#settings-dialog .iziModal-content section {
+    padding-top: 1vw;
+    padding-right: 1vw;
+    padding-left: 1vw;
+}
+#settings-dialog .iziModal-content section h1 {
+    font-size: 2vw;
+}
+#settings-dialog .iziModal-content section input:not([type="checkbox"]) {
+    width: 50%;
+    margin-bottom: 3vh;
+    padding: 0.5vw;
+    font-size: 1.5vw;
+    font-family: inherit;
+    background: transparent;
+    border: solid 0.5px rgba(255, 255, 255, 0.5);
+    color: white;
+}
+#settings-dialog .iziModal-content section input:focus {
+    border-color: rgba(255, 255, 255, 1);
+}
+#settings-dialog .iziModal-content section label:not(.check-label) {
+    width: 50%;
+    font-size: 1.5vw;
+    text-align: left;
+}
+#settings-dialog .iziModal-content section footer{
+    overflow: hidden;
+    padding: 1vw;
+}
+#settings-dialog .iziModal-content section footer button{
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.15);
+    width: 50%;
+    border: 1px solid white;
+    font-size: 2vw;
+    font-family: inherit;
+    background: transparent;
+    color: white;
+    padding: 0.5vw;
 }
 /* Calendar styles */
 .fc .fc-toolbar-title {

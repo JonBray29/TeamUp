@@ -30,7 +30,7 @@
     <!-- Menu buttons -->
     <div id="menu-buttons">
         <input type="image" id="notifications" src="Icons/icons8-notification-100.png" />
-        <input type="image" id="settings" src="Icons/icons8-settings-100.png" />
+        <input type="image" id="settings" src="Icons/icons8-settings-100.png" data-izimodal-open="#settings-dialog" />
     </div>
 
     <!-- To do list -->
@@ -53,12 +53,14 @@
             <a href="">Sign Up</a>
         </header>
         <section>
+            <label for="login-display-name">Display Name:</label>
+            <input type="text" id="login-display-name" placeholder="Enter Display Name..." />
             <label for="login-email">Email:</label>
             <input type="email" id="login-username" placeholder="Enter Username..." />
             <label for="login-password">Password:</label>
             <input type="password" id="login-password" placeholder="Enter Password..." />
 
-            <div class="pretty p-icon p-smooth check-div">
+            <div class="pretty p-icon p-smooth modal-sub-div">
                 <input type="checkbox" id="login-remember-me" />
                 <div class="state">
                     <i class="icon mdi mdi-check"></i>
@@ -76,7 +78,7 @@
             <label for="signup-team">Team Name:</label>
             <input type="text" id="signup-team" placeholder="Enter team name..." >
 
-            <div class="pretty p-icon p-smooth check-div">
+            <div class="pretty p-icon p-smooth modal-sub-div">
                 <input type="checkbox" id="signup-team-check" />
                 <div class="state">
                     <i class="icon mdi mdi-check"></i>
@@ -90,6 +92,34 @@
             <input type="password" id="signup-password" placeholder="Confirm Password..." />
             <footer>
                 <button class="submit hvr-grow">Sign Up</button>
+            </footer>
+        </section>
+    </div>
+
+    <!-- Settings dialog -->
+    <div id="settings-dialog" data-iziModal-group="group2">
+        <header>
+            <h1>Settings</h1>
+            <i data-iziModal-close class="mdi mdi-close hvr-grow"></i>
+        </header>
+        <section>
+            <label for="settings-display-name">Change Display Name:</label>
+            <input type="text" id="settings-display-name" placeholder="Enter New Display Name..." />
+            <h1>Notification settings:</h1>
+            <div class="pretty p-switch modal-sub-div">
+                <input type="checkbox">
+                <div class="state p-info">
+                    <label class="check-label">Receive new event notifications?</label>
+                </div>
+            </div>
+            <div class="pretty p-switch modal-sub-div">
+                <input type="checkbox">
+                <div class="state p-info">
+                    <label class="check-label">Receive new task notifications?</label>
+                </div>
+            </div>
+            <footer>
+                <button class="submit hvr-grow">Save</button>
             </footer>
         </section>
     </div>

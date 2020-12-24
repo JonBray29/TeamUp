@@ -1,11 +1,11 @@
 $(function(){
-    //Open modal dialog
+    //Login dialog
     $("#login-modal").iziModal({
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.6)'
     });
     $("#login-modal").iziModal("open");
-
+    //Switch views on modal
     $("#login-modal").on("click", "header a", function(e){
         e.preventDefault();
         let index = $(this).index();
@@ -13,7 +13,19 @@ $(function(){
         $(this).addClass('active').siblings('a').removeClass('active');
         $(this).parents("div").find("section").eq(index).removeClass('hide').siblings('section').addClass('hide');
     });
+    //Submit login dialog
+    $("#login-modal").on('click', '.submit', function(e) {
+        e.preventDefault();
 
+        //TAKE DATA INPUT AND DO CHECKS --------------------------------------
+        $("#login-modal").iziModal("close");
+    }); 
+    //Settings dialog
+    $("#settings-dialog").iziModal({
+        overlayClose: true,
+        overlayColor: 'rgba(0, 0, 0, 0.6)'
+    });
+    
     //Start the time
     showTimeAndDate();
     showCalendar();
