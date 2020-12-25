@@ -247,6 +247,36 @@ body {
     color: white;
     padding: 0.5vw;
 }
+/* Notifications dialog */
+#notifications-dialog {
+    background:rgba(79, 79, 79, 1);
+    width: 25vw;
+    position: absolute;
+    right: -75vw;
+}
+#notifications-dialog .iziModal-content header {
+    overflow: hidden;
+    width: 100%;
+}
+#notifications-dialog .iziModal-content header h1 {
+    display: block;
+    width: 100%;
+    color: white;
+    height: 2vh;
+    text-align: center;
+    line-height: 2vh;
+    font-size: 2vw;
+}
+#notifications-dialog .iziModal-content header div.triangle {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 1vw solid transparent;
+	border-right: 1vw solid transparent;
+    border-bottom: 2vw solid rgba(79, 79, 79, 1);
+    top: -2vw;
+    right: 3.75vw;
+}
 /* Calendar styles */
 .fc .fc-toolbar-title {
     font-size: 1.3em;

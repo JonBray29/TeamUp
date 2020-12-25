@@ -17,7 +17,8 @@ $(function(){
     $("#login-modal").on('click', '.submit', function(e) {
         e.preventDefault();
 
-        //TAKE DATA INPUT AND DO CHECKS --------------------------------------
+        //TAKE DATA INPUT, DO CHECKS AND SAVE DISPLAY NAME TO LOCAL STORAGE ---------------------------------------
+
         $("#login-modal").iziModal("close");
     }); 
     //Settings dialog
@@ -25,7 +26,20 @@ $(function(){
         overlayClose: true,
         overlayColor: 'rgba(0, 0, 0, 0.6)'
     });
-    
+    $("#settings-dialog").on('click', '.submit', function(e){
+        e.preventDefault();
+
+        //UPDATE DISPLAY NAME AND SETTINGS AND SAVE TO LOCAL STORAGE -------------------------------
+
+        $("#settings-dialog").iziModal("close");
+    });
+    //Notification dialog
+    $("#notifications-dialog").iziModal({
+        overlayClose: true,
+        overlayColor: 'rgba(0, 0, 0, 0.2)',
+        top: '10vh',
+        transitionIn: 'fadeInDown'
+    });
     //Start the time
     showTimeAndDate();
     showCalendar();
@@ -118,7 +132,7 @@ $(function(){
 
         //ALSO ADD THE TASK TO THE WEBSERVER TO ADD TO DATABASE AND OTHER CLIENTS ---------------------------
     }
-    var itemArray = [];
+    var removeItem = [];
     //On list item click strikethrough the task
     $("#todo-list").click(function(event){
         let target = $(event.target);
@@ -127,8 +141,7 @@ $(function(){
             
             if(target.hasClass("checked")){
                 target.fadeTo(5000, 0.5);
-                let removeItem = setTimeout(function(){ target.remove() }, 5000);  //Mark task as complete in DB ------------
-                itemArray.push(removeItem);
+                removeItem = setTimeout(function(){ target.remove() }, 5000);  //Mark task as complete in DB ------------
             }
             else if(!target.hasClass("checked")){
                 //Cancel task completion -----------------------------------------

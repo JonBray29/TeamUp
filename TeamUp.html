@@ -29,7 +29,7 @@
 
     <!-- Menu buttons -->
     <div id="menu-buttons">
-        <input type="image" id="notifications" src="Icons/icons8-notification-100.png" />
+        <input type="image" id="notifications" src="Icons/icons8-notification-100.png" data-iziModal-open="#notifications-dialog" />
         <input type="image" id="settings" src="Icons/icons8-settings-100.png" data-izimodal-open="#settings-dialog" />
     </div>
 
@@ -121,6 +121,26 @@
             <footer>
                 <button class="submit hvr-grow">Save</button>
             </footer>
+        </section>
+    </div>
+    <!-- Notifications dialog -->
+    <div id="notifications-dialog" data-iziModal-group="group3">
+        <header>
+            <h1>Notifications</h1>
+            <div class="triangle"></div>
+        </header>
+        <section>
+            <div>
+                <h1>This is an event</h1>
+                <time>00:30</time>
+                <button>Dismiss</button>
+            </div>
+            <div>
+                <h1>This is a request</h1>
+                <time>00:30</time>
+                <button>Accept</button>
+                <button>Reject</button>
+            </div>
         </section>
     </div>
 </body>
