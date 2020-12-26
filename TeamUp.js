@@ -112,7 +112,7 @@ $(function(){
         calendar.render();
     }
     //Listen for click on add new task
-    $("#new-task").click(function(){
+    $("#new-task").on('click', function(){
         $("#new-task").removeClass("new-task");
         $("#new-task").removeClass("new-task-blink");
         $("#new-task").addClass("new-task-entered");
@@ -128,7 +128,7 @@ $(function(){
         }
     })
     //On focus out of new task change class
-    $("#new-task").focusout(function(){
+    $("#new-task").on('focusout', function(){
         if($.trim($("#new-task").text()) != ""){
             $("#new-task").addClass("new-task-blink");
         }
@@ -147,7 +147,7 @@ $(function(){
     }
     var removeItem = [];
     //On list item click strikethrough the task
-    $("#todo-list").click(function(event){
+    $("#todo-list").on('click', function(event){
         let target = $(event.target);
         if(target.hasClass("list-item")){
             target.addClass("checked");
@@ -156,6 +156,48 @@ $(function(){
                 target.fadeTo(5000, 0.5);
                 removeItem = setTimeout(function(){ target.remove() }, 5000);  //Mark task as complete in DB ------------
             }
+        }
+    });
+
+    var timer = new easytimer.Timer();
+    timer.addEventListener('secondsUpdated', function(e){
+        $("#stopwatch").html(timer.getTimeValues().toString());
+    });
+    timer.addEventListener('reset', function(e){
+        $("#stopwatch").html(timer.getTimeValues().toString());
+    });
+    //Start time tracking
+    $("#play").on('click', function(e){
+        timer.start();
+
+        $("#play").toggleClass('hide');
+        $("#pause").toggleClass('hide');
+        $("#stop").removeClass('hide');
+        //Start time, toggle class (hide play and show pause and stop)
+    });
+    $("#pause").on('click', function(e){
+        //Pause time and toggle class (hide pause, show play)
+        timer.pause();
+
+        $("#play").toggleClass('hide');
+        $("#pause").toggleClass('hide');
+    });
+    $("#stop").on('click', function(e){
+        //Else error asking for name of event
+        if($.trim($("#time-task").val()) != ""){
+            timer.stop();
+            //ADD TIME EVENT TO CALENDAR AND DB ------------------------------
+            let time = timer.getTimeValues();
+            let title = $("#time-task").val();
+            //let name = localstorage display name -----------------------------
+            
+            $("#time-task").val('');
+            timer.reset();
+            timer.pause();
+
+        }
+        else{
+            console.log('Please enter an task title'); //CHANGE ERROR MESSAGE, RED OUTLINE ON THE BOX ----------
         }
     });
 })

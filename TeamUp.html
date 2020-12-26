@@ -18,6 +18,8 @@
     <script src="node_modules/izimodal/js/iziModal.min.js"></script>
     <!-- Pretty Checkbox -->
     <link href="node_modules/pretty-checkbox/dist/pretty-checkbox.min.css" rel="stylesheet" />
+    <!-- Easytimer.js -->
+    <script src="node_modules/easytimer.js/dist/easytimer.min.js"></script>
     <!-- Application stylesheet and script -->
     <script src="TeamUp.js"></script>
     <link rel="stylesheet" href="TeamUp.css">
@@ -48,7 +50,12 @@
 
     <!-- Time tracking -->
     <div id="time-tracking">
-        
+        <h1><span>Time tracking</span></h1>
+        <input type="text" id="time-task" placeholder="What are you working on?">
+        <time id="stopwatch">00:00:00</time>
+        <i class="mdi mdi-play-circle-outline toggle" id="play"></i>
+        <i class="mdi mdi-pause-circle-outline toggle hide" id="pause"></i>
+        <i class="mdi mdi-stop-circle-outline stop hide" id="stop"></i>
     </div>
 
     <!-- Login -->
