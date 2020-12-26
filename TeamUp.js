@@ -41,7 +41,8 @@ $(function(){
         overlayClose: true,
         overlayColor: 'rgba(0, 0, 0, 0.2)',
         top: '10vh',
-        transitionIn: 'fadeInDown'
+        transitionIn: 'fadeInDown',
+        transitionOut: 'fadeOutUp'
     });
     $("#notifications-dialog").on('click', '.dismiss', function(e){
         $(this).parent('div').remove();
@@ -56,7 +57,11 @@ $(function(){
 
         $(this).parent('div').remove();
     });
-
+    //Event dialog
+    $("#events-dialog").iziModal({
+        overlayClose: true,
+        overlayColor: 'rgba(0, 0, 0, 0.6'
+    });
     //Gets the current time and date and displays it, updates it every second.
     function showTimeAndDate(){
         let newDate = new Date();
@@ -107,6 +112,9 @@ $(function(){
                 day: 'numeric',
                 month: 'numeric',
                 omitCommas: true
+            },
+            dateClick: function(info){
+                $("#events-dialog").iziModal('open');
             }
         });
         calendar.render();
