@@ -1,10 +1,13 @@
 $(function(){
+    //Start the time
+    showTimeAndDate();
+    showCalendar();
     //Login dialog
     $("#login-modal").iziModal({
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.6)'
     });
-    $("#login-modal").iziModal("open");
+    $("#login-modal").iziModal("open"); //CHECK LOCAL STORAGE -------------------
     //Switch views on modal
     $("#login-modal").on("click", "header a", function(e){
         e.preventDefault();
@@ -40,9 +43,19 @@ $(function(){
         top: '10vh',
         transitionIn: 'fadeInDown'
     });
-    //Start the time
-    showTimeAndDate();
-    showCalendar();
+    $("#notifications-dialog").on('click', '.dismiss', function(e){
+        $(this).parent('div').remove();
+    });
+    $("#notifications-dialog").on('click', '.accept', function(e){
+        //ACCEPT THE REQUEST ----------------------------------------------------------------------
+
+        $(this).parent('div').remove();
+    });
+    $("#notifications-dialog").on('click', '.reject', function(e){
+        //REJECT THE REQUEST ---------------------------------------------------------------------
+
+        $(this).parent('div').remove();
+    });
 
     //Gets the current time and date and displays it, updates it every second.
     function showTimeAndDate(){
@@ -142,9 +155,6 @@ $(function(){
             if(target.hasClass("checked")){
                 target.fadeTo(5000, 0.5);
                 removeItem = setTimeout(function(){ target.remove() }, 5000);  //Mark task as complete in DB ------------
-            }
-            else if(!target.hasClass("checked")){
-                //Cancel task completion -----------------------------------------
             }
         }
     });

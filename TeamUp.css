@@ -277,6 +277,41 @@ body {
     top: -2vw;
     right: 3.75vw;
 }
+#notifications-dialog .iziModal-content section {
+    overflow-y: scroll;
+    max-height: 50vh;
+}
+#notifications-dialog .iziModal-content section div {
+    border-top: solid 0.5px rgba(255, 255, 255, 0.25);
+    padding-bottom: 4vw;
+}
+#notifications-dialog .iziModal-content section div:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+#notifications-dialog .iziModal-content section h1 {
+    font-size: 1.5vw;
+    text-align: left;
+    padding-left: 1vw;
+}
+#notifications-dialog .iziModal-content section time {
+    float: left;
+    padding-left: 1vw;
+    padding-top: 0.75vw;
+    padding-bottom: 0.75vw;
+    font-size: 1vw;
+}
+#notifications-dialog .iziModal-content section button {
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid white;
+    font-size: 1.25vw;
+    font-family: inherit;
+    background: transparent;
+    color: white;
+    padding: 0.5vw;
+    float: right;
+    margin-right: 0.5vw;
+}
 /* Calendar styles */
 .fc .fc-toolbar-title {
     font-size: 1.3em;
