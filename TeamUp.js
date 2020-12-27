@@ -1,4 +1,6 @@
 $(function(){
+    //Declare arrays
+    var team;
     //Start the time
     showTimeAndDate();
     showCalendar();
@@ -17,13 +19,21 @@ $(function(){
         $(this).parents("div").find("section").eq(index).removeClass('hide').siblings('section').addClass('hide');
     });
     //Submit login dialog
-    $("#login-modal").on('click', '.submit', function(e) {
+    $("#login-modal").on('click', '.submit-login', function(e) {
         e.preventDefault();
 
         //TAKE DATA INPUT, DO CHECKS AND SAVE DISPLAY NAME TO LOCAL STORAGE ---------------------------------------
 
+        //team = get from webserver by looking for the team ID that matches the users ID --------------------------
         $("#login-modal").iziModal("close");
     }); 
+    $("#login-modal").on('click', '.submit-signup', function(e){
+        e.preventDefault();
+
+        //save data to team that matches the team name and alert user that they can sign in once accepted ---------
+
+        $("#login-modal").iziModal("close");
+    });
     //Settings dialog
     $("#settings-dialog").iziModal({
         overlayClose: true,
