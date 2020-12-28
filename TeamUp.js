@@ -1,6 +1,7 @@
 $(function(){
     //Declare arrays
     var team;
+    var user;
     //Start the time
     showTimeAndDate();
     showCalendar();
