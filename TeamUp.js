@@ -1,7 +1,10 @@
 $(function(){
     //Declare arrays
-    var team;
-    var user;
+    var holidayArray;
+    var meetingArray;
+    var milestoneArray;
+    var timeArray;
+    var notificationsArray;
     //Start the time
     showTimeAndDate();
     showCalendar();
@@ -23,10 +26,35 @@ $(function(){
     $("#login-modal").on('click', '.submit-login', function(e) {
         e.preventDefault();
 
+        var validation = false;
+
+        if(!validator.isEmail($("#login-email").val())){
+            if($("label[for=login-email] span").length == 0){
+                $("label[for=login-email]").append("<span class='validation'> Ensure you have entered a valid email.</span>");
+            }
+            validation = true;
+        }
+        else{
+            $("label[for=login-email]").find("span").remove();
+        }
+        if(validator.isEmpty($("#login-password").val())){
+            if($("label[for=login-password] span").length == 0){
+                $("label[for=login-password]").append("<span class='validation'> Ensure you have entered your password.</span>");
+            }
+            validation = true;
+        }
+        else{
+            $("label[for=login-password]").find("span").remove();
+        }
+
+        if(!validation){
+            //CALL WEB WEBSERVER TO VALIDATE LOGIN AND THEN PULL DATA DOWN FOR USER AND TEAM ----------------------
+
+            $("#login-modal").iziModal("close");
+        }
         //TAKE DATA INPUT, DO CHECKS AND SAVE DISPLAY NAME TO LOCAL STORAGE ---------------------------------------
 
         //team = get from webserver by looking for the team ID that matches the users ID --------------------------
-        $("#login-modal").iziModal("close");
     }); 
     $("#login-modal").on('click', '.submit-signup', function(e){
         e.preventDefault();
@@ -141,7 +169,7 @@ $(function(){
     $("#new-task").on('keypress', function(e){
         if(e.which == 13){
             e.preventDefault();
-            if($.trim($("#new-task").text()) != ""){
+            if(!validator.isEmpty($("#new-task").text())){
                 addTask();
             }
             $("#new-task").html("");
@@ -149,7 +177,7 @@ $(function(){
     })
     //On focus out of new task change class
     $("#new-task").on('focusout', function(){
-        if($.trim($("#new-task").text()) != ""){
+        if(!validator.isEmpty($("#new-task").text())){
             $("#new-task").addClass("new-task-blink");
         }
         else{
@@ -165,7 +193,7 @@ $(function(){
 
         //ALSO ADD THE TASK TO THE WEBSERVER TO ADD TO DATABASE AND OTHER CLIENTS ---------------------------
     }
-    var removeItem = [];
+    var removeItem;
     //On list item click strikethrough the task
     $("#todo-list").on('click', function(event){
         let target = $(event.target);
@@ -204,7 +232,7 @@ $(function(){
     });
     $("#stop").on('click', function(e){
         //Else error asking for name of event
-        if($.trim($("#time-task").val()) != ""){
+        if(!validator.isEmpty($("#time-task").val())){
             timer.stop();
             //ADD TIME EVENT TO CALENDAR AND DB ------------------------------
             let time = timer.getTimeValues();
