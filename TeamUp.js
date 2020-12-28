@@ -32,6 +32,7 @@ $(function(){
         e.preventDefault();
 
         //save data to team that matches the team name and alert user that they can sign in once accepted ---------
+        $.post("http://localhost:9000/createTeam", { teamName: "Team", email: "jonbray29@hotmail.com", pass: "ungaBunga"});
 
         $("#login-modal").iziModal("close");
     });
