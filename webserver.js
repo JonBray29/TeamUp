@@ -4,8 +4,8 @@ const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const socketIo = require("socket.io");
 const http = require("http");
+const cors = require("cors");
 const { ObjectId } = require("bson");
-const { nextTick } = require("process");
 const saltRounds = 10;
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +14,7 @@ const dbUrl = "mongodb+srv://user:userPassword@teamup.lp8bc.mongodb.net/TeamUp?r
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cors());
 
 //Connect to db
 mongoose.connect(dbUrl, { useUnifiedTopology: true, useNewUrlParser: true });
@@ -102,24 +103,72 @@ app.post("/createTeam", function(req, res){
     let email = req.body.email;
     let pass = req.body.pass;
   
-    let team = new teamModel({ name: teamName, users: [{email: email, type: "Admin", accepted: true}]});
+    if(doesEmailExist(email)){
+        return res.json({ status: 400, message: "email" });
+    }
+    else if(doesTeamExist(teamName)){
+        return res.json({ status: 400, message: "teamNameExists" });
+    }
+    else{
+        let team = new teamModel({ name: teamName, users: [{email: email, type: "Admin", accepted: true}]});
 
-    team.save(function(err){
-        if(err) console.log(err);
-
-        else{
-            createCredentials(email, pass, team._id);
-        }
-    });
+        team.save(function(err){
+            if(err){
+                return res.json({ status: 500, message: err });
+            }
+            else{
+                createCredentials(email, pass, team._id);
+            }
+        });
+    }
+    return res.json( { status: 200 } );
 });
-//Create user in team
+//Join team
+app.post("/joinTeam", function(req, res){
+    let teamName = req.body.teamName;
+    let email = req.body.email;
+    let pass = req.body.pass;
 
+    if(doesEmailExist(email)){
+        return res.json({ status: 400, message: "email" });
+    }
+    else if(!doesTeamExist(teamName)){
+        return res.json({ status: 400, message: "teamNameExists" });
+    }
+    else{
+        //Push user to team and save credentials.
+    }
+});
+//Check if team does or doesn't exist
+function doesTeamExist(teamName){
+    let count = teamModel.countDocuments({ name: teamName});
+
+    if(count > 0){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+//Check if email is already linked to an account
+function doesEmailExist(email){
+    let count = credentialModel.countDocuments({ email: email });
+    
+    if(count > 0){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
 //Create credentials for users
 function createCredentials(email, pass, team){
     let credential = new credentialModel({ email: email, password: pass, teamId: team });
 
     credential.save(function(err){
-        if(err) console.log(err);
+        if(err){
+            return res.status(500).json({ message: err });
+        }
     })
 }
 

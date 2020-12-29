@@ -26,7 +26,7 @@ $(function(){
     $("#login-modal").on('click', '.submit-login', function(e) {
         e.preventDefault();
 
-        var validation = false;
+        let validation = false;
 
         if(!validator.isEmail($("#login-email").val())){
             if($("label[for=login-email] span").length == 0){
@@ -49,7 +49,7 @@ $(function(){
 
         if(!validation){
             //CALL WEB WEBSERVER TO VALIDATE LOGIN AND THEN PULL DATA DOWN FOR USER AND TEAM ----------------------
-
+            //If remember me is checked save to localstorage
             $("#login-modal").iziModal("close");
         }
         //TAKE DATA INPUT, DO CHECKS AND SAVE DISPLAY NAME TO LOCAL STORAGE ---------------------------------------
@@ -58,12 +58,87 @@ $(function(){
     }); 
     $("#login-modal").on('click', '.submit-signup', function(e){
         e.preventDefault();
+        let validation = false;
 
-        //save data to team that matches the team name and alert user that they can sign in once accepted ---------
-        $.post("http://localhost:9000/createTeam", { teamName: "Team", email: "jonbray29@hotmail.com", pass: "ungaBunga"});
+        if(!validator.isEmail($("#signup-email").val())){
+            if($("label[for=signup-email] span").length == 0){
+                $("label[for=signup-email").append("<span class='validation'> Ensure you have entered a valid email.</span>");
+            }
+            validation = true;
+        }
+        else{
+            $("label[for=signup-email]").find("span").remove();
+        }
+        if(validator.isEmpty($("#signup-team").val())){
+            if($("label[for=signup-team] span").length == 0){
+                $("label[for=signup-team]").append("<span class='validation'> Ensure that you have entered a team name.</span>");
+            }
+            validation = true;
+        }
+        else{
+            $("label[for=signup-team]").find("span").remove();
+        }
+        if(!validator.isStrongPassword($("#signup-password").val(), { minSymbols: 0 })){
+            if($("label[for=signup-password] span").length == 0){
+                $("label[for=signup-password]").append("<span class='validation'> Ensure your password is at least 8 characters in length, contains 1 upper and 1 lowercase letter, and 1 Number.</span>")
+            }
+            validation = true;
+        }
+        else{
+            $("label[for=signup-password]").find("span").remove();
+        }
+        if($("#signup-password").val() != $("#signup-password-confirm").val()){
+            if($("label[for=signup-password-confirm] span").length == 0){
+                $("label[for=signup-password-confirm]").append("<span class='validation'> Ensure that passwords match.</span>")
+            }
+            validation = true;
+        }
+        else{
+            $("label[for=signup-password-confirm]").find("span").remove();
+        }
+        if(!validation){
+            if($("#signup-team-check").prop("checked")){
+                //new team
+                $.post("http://localhost:9000/createTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val()}, function(res){
+                    
+                    switch(res.status){
+                        case 200: 
+                            //Switch to login page, autofill email;
+                            break;
+                        case 400: 
+                            validationError(res);
+                            break;
+                        case 500: 
+                            console.log(res.message);
+                            break;
+                        default: 
+                            console.log(res.status);
+                    }
+                });
 
-        $("#login-modal").iziModal("close");
+                $("#login-modal").iziModal("close");
+            }
+            else{
+                //join team
+                $.post("http://localhost:9000/joinTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val()}, function(res){
+                    console.log(res);
+                });
+
+                $("#login-modal").iziModal("close");
+            }
+        }
     });
+    function validationError(res){ 
+        if(res.message == "email"){
+            $("label[for=signup-email").append("<span class='validation'> Email is linked to an existing account.</span>");
+        }
+        else if(res.message == "teamNameExists"){
+            $("label[for=signup-team-name").append("<span class='validation'> Team name already exists.</span>");
+        }
+        else if(res.message == "teamNameNonExistent"){
+            $("label[for=signup-team-name").append("<span class='validation'> Team does not exist.</span>");
+        }
+    }
     //Settings dialog
     $("#settings-dialog").iziModal({
         overlayClose: true,
