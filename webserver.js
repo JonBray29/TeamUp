@@ -149,6 +149,21 @@ function createCredentials(email, pass, team){
 }
 
 //Login
+app.post("/login", async function(req, res){
+    let email = req.body.email;
+    let password = req.body.password;
+
+    var user = await credentialModel.findOne({ email: email });
+    if(!user){
+        return res.json({ status: 400, message: "incorrectEmail"});
+    }
+    if(!bcrypt.compareSync(password, user.password)){
+        return res.json({ status: 400, message: "incorrectPassword" });
+    }
+    else{
+        return res.json({ status: 200 });
+    }
+});
 //user = find them in database.
 //bcrypt.compare(input password, user.password)
 

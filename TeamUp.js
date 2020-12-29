@@ -13,12 +13,14 @@ $(function(){
         overlayClose: false,
         overlayColor: 'rgba(0, 0, 0, 0.6)'
     });
-    $("#login-modal").iziModal("open"); //CHECK LOCAL STORAGE -------------------
+    $("#login-modal").iziModal("open"); 
+    if(localStorage.email != undefined){
+        $("#login-email").val(localStorage.email);
+    }
     //Switch views on modal
     $("#login-modal").on("click", "header a", function(e){
         e.preventDefault();
         let index = $(this).index();
-
         $(this).addClass('active').siblings('a').removeClass('active');
         $(this).parents("div").find("section").eq(index).removeClass('hide').siblings('section').addClass('hide');
     });
@@ -48,11 +50,22 @@ $(function(){
         }
 
         if(!validation){
-            //CALL WEB WEBSERVER TO VALIDATE LOGIN AND THEN PULL DATA DOWN FOR USER AND TEAM ----------------------
-            //If remember me is checked save to localstorage
-            $("#login-modal").iziModal("close");
+            $.post("http://localhost:9000/login", { email: $("#login-email").val(), password: $("#login-password").val() }, function(res){
+                if(res.status == 200){
+                    if($("#login-remember-me").prop("checked")){
+                        localStorage.setItem("email", $("#login-email").val());
+                    }
+                    //set all variables
+                    $("#login-modal").iziModal("close");
+                }
+                else if(res.status == 400){
+                    validationError(res);
+                }
+                else{
+                    console.log(res.status);
+                }
+            });
         }
-        //TAKE DATA INPUT, DO CHECKS AND SAVE DISPLAY NAME TO LOCAL STORAGE ---------------------------------------
 
         //team = get from webserver by looking for the team ID that matches the users ID --------------------------
     }); 
@@ -141,6 +154,12 @@ $(function(){
         }
         else if(res.message == "teamNameNonExistent"){
             $("label[for=signup-team]").append("<span class='validation'> Team does not exist.</span>");
+        }
+        else if(res.message == "incorrectEmail"){
+            $("label[for=login-email]").append("<span class='valid'> Email entered is not registered.</span>");
+        }
+        else if(res.message == "incorrectPassword"){
+            $("label[for=login-password]").append("<span class='valid'> Password is incorrect.</span>");
         }
     }
     function signUpSuccess(email){
