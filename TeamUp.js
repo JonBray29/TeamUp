@@ -103,41 +103,51 @@ $(function(){
                     
                     switch(res.status){
                         case 200: 
-                            //Switch to login page, autofill email;
+                            signUpSuccess($("#signup-email").val());
                             break;
                         case 400: 
                             validationError(res);
-                            break;
-                        case 500: 
-                            console.log(res.message);
                             break;
                         default: 
                             console.log(res.status);
                     }
                 });
-
-                $("#login-modal").iziModal("close");
             }
             else{
                 //join team
                 $.post("http://localhost:9000/joinTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val()}, function(res){
-                    console.log(res);
+                    
+                    switch(res.status){
+                        case 200: 
+                            signUpSuccess($("#signup-email").val());
+                            break;
+                        case 400: 
+                            validationError(res);
+                            break;
+                        default: 
+                            console.log(res.status);
+                    }
                 });
-
-                $("#login-modal").iziModal("close");
             }
         }
     });
     function validationError(res){ 
+        console.log(res.message);
         if(res.message == "email"){
-            $("label[for=signup-email").append("<span class='validation'> Email is linked to an existing account.</span>");
+            $("label[for=signup-email]").append("<span class='validation'> Email is linked to an existing account.</span>");
         }
         else if(res.message == "teamNameExists"){
-            $("label[for=signup-team-name").append("<span class='validation'> Team name already exists.</span>");
+            $("label[for=signup-team]").append("<span class='validation'> Team name already exists.</span>");
         }
         else if(res.message == "teamNameNonExistent"){
-            $("label[for=signup-team-name").append("<span class='validation'> Team does not exist.</span>");
+            $("label[for=signup-team]").append("<span class='validation'> Team does not exist.</span>");
         }
+    }
+    function signUpSuccess(email){
+        $("#login-modal").find("header").find("a").toggleClass("active");
+        $("#login-modal").find("section").not("hide").find("input").val('');
+        $("#login-modal").find("section").toggleClass("hide");
+        $("#login-email").val(email);
     }
     //Settings dialog
     $("#settings-dialog").iziModal({

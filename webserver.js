@@ -98,78 +98,54 @@ credentialSchema.pre('save', function(next){
 const credentialModel = mongoose.model("Credentials", credentialSchema);
 
 //Create team
-app.post("/createTeam", function(req, res){
+app.post("/createTeam", async function(req, res){
     let teamName = req.body.teamName;
     let email = req.body.email;
     let pass = req.body.pass;
   
-    if(doesEmailExist(email)){
+    if(await credentialModel.countDocuments({ email: email }) != 0){
         return res.json({ status: 400, message: "email" });
     }
-    else if(doesTeamExist(teamName)){
+    else if(await teamModel.countDocuments({ name: teamName }) != 0){
         return res.json({ status: 400, message: "teamNameExists" });
     }
     else{
         let team = new teamModel({ name: teamName, users: [{email: email, type: "Admin", accepted: true}]});
 
-        team.save(function(err){
-            if(err){
-                return res.json({ status: 500, message: err });
-            }
-            else{
-                createCredentials(email, pass, team._id);
-            }
-        });
+        team.save();
+        createCredentials(email, pass, team._id);
+        return res.json( { status: 200 } );
     }
-    return res.json( { status: 200 } );
 });
 //Join team
-app.post("/joinTeam", function(req, res){
+app.post("/joinTeam", async function(req, res){
     let teamName = req.body.teamName;
     let email = req.body.email;
     let pass = req.body.pass;
 
-    if(doesEmailExist(email)){
+    if(await credentialModel.countDocuments({ email: email }) != 0){
         return res.json({ status: 400, message: "email" });
     }
-    else if(!doesTeamExist(teamName)){
-        return res.json({ status: 400, message: "teamNameExists" });
+    else if(await teamModel.countDocuments({ name: teamName }) == 0){
+        console.log("team");
+        return res.json({ status: 400, message: "teamNameNonExistent" });
     }
     else{
-        //Push user to team and save credentials.
+        let newUser = { email: email, type: "Standard", accepted: false };
+        await teamModel.updateOne(
+            { name: teamName },
+            { $push: { users: newUser }}
+        )
+        let team = await teamModel.findOne({ name: teamName });
+        createCredentials(email, pass, team._id);
+        //Add notification to admins notifications, web socket send the notification. ----------------------------------------------------------------
+        return res.json({ status: 200 });
     }
 });
-//Check if team does or doesn't exist
-function doesTeamExist(teamName){
-    let count = teamModel.countDocuments({ name: teamName});
-
-    if(count > 0){
-        return true;
-    }
-    else{
-        return false;
-    }
-}
-//Check if email is already linked to an account
-function doesEmailExist(email){
-    let count = credentialModel.countDocuments({ email: email });
-    
-    if(count > 0){
-        return true;
-    }
-    else{
-        return false;
-    }
-}
 //Create credentials for users
 function createCredentials(email, pass, team){
     let credential = new credentialModel({ email: email, password: pass, teamId: team });
-
-    credential.save(function(err){
-        if(err){
-            return res.status(500).json({ message: err });
-        }
-    })
+    credential.save();
 }
 
 //Login
