@@ -83,12 +83,23 @@ $(function(){
     }
     function setTasks(tasks){
         tasks.forEach(function(task){
-
+            $("#todo-list").append("<li class=\"list-item\">" + task.task + "</li>")
         });
     }
     function setNotifications(notifications){
         notifications.forEach(function(notification){
-
+            let time = "<time>" + moment(notification.date).format("MMM Do YYYY @ HH:mm") + "</time>";
+            let dismiss = "<button class='hvr-grow dismiss'>Dismiss</button>";
+            let accept = "<button class='hvr-grow accept'>Accept</button>";
+            let reject = "<button class='hvr-grow reject'>Reject</button>";
+            if(notification.type == "Event"){
+                let title = "<h1>" + "New event: " + notification.message + "</h1>";
+                $("#notifications-dialog").find("section").append("<div>" + title + time + dismiss + "</div>");
+            }
+            else{
+                let title = "<h1>" + "New Request: " + notification.message + "</h1>";
+                $("#notifications-dialog").find("section").append("<div>" + title + time + reject + accept + "</div>");
+            }
         });
     }
     

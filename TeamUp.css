@@ -249,7 +249,7 @@ body {
 	border-right: 1vw solid transparent;
     border-bottom: 2vw solid rgba(79, 79, 79, 1);
     top: -2vw;
-    right: 3.75vw;
+    right: 1vw;
 }
 #notifications-dialog .iziModal-content section {
     overflow-y: scroll;
