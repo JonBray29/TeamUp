@@ -1,10 +1,13 @@
 $(function(){
+    var socket;
+    var calendar;
     //Declare arrays
-    var holidayArray;
-    var meetingArray;
-    var milestoneArray;
-    var timeArray;
-    var notificationsArray;
+    var holidayArray = [];
+    var meetingArray = [];
+    var milestoneArray = [];
+    var timeArray = [];
+    var tasksArray = [];
+    var notificationsArray = [];
     //Start the time
     showTimeAndDate();
     showCalendar();
@@ -55,6 +58,11 @@ $(function(){
                     if($("#login-remember-me").prop("checked")){
                         localStorage.setItem("email", $("#login-email").val());
                     }
+                    handleArrays(res);
+                    socket = io("http://localhost:9000");
+                    socket.on ("connect", function(){
+                        socket.emit('join', { room: res.teamName, email: $("#login-email").val() });
+                    });
                     //set all variables
                     $("#login-modal").iziModal("close");
                 }
@@ -66,9 +74,24 @@ $(function(){
                 }
             });
         }
-
-        //team = get from webserver by looking for the team ID that matches the users ID --------------------------
     }); 
+    //Handle arrays and set tasks, calendar and notifications
+    function handleArrays(res){
+        setTasks(res.tasks);
+        setNotifications(res.notifications);
+        calendar.refetchEvents();
+    }
+    function setTasks(tasks){
+        tasks.forEach(function(task){
+
+        });
+    }
+    function setNotifications(notifications){
+        notifications.forEach(function(notification){
+
+        });
+    }
+    
     $("#login-modal").on('click', '.submit-signup', function(e){
         e.preventDefault();
         let validation = false;
@@ -168,18 +191,6 @@ $(function(){
         $("#login-modal").find("section").toggleClass("hide");
         $("#login-email").val(email);
     }
-    //Settings dialog
-    $("#settings-dialog").iziModal({
-        overlayClose: true,
-        overlayColor: 'rgba(0, 0, 0, 0.6)'
-    });
-    $("#settings-dialog").on('click', '.submit', function(e){
-        e.preventDefault();
-
-        //UPDATE DISPLAY NAME AND SETTINGS AND SAVE TO LOCAL STORAGE -------------------------------
-
-        $("#settings-dialog").iziModal("close");
-    });
     //Notification dialog
     $("#notifications-dialog").iziModal({
         overlayClose: true,
@@ -241,7 +252,7 @@ $(function(){
         let date = new Date();
 
         var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
+        calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'timeGridWeek',
             locale: 'gb',
             firstDay: 1,
@@ -259,7 +270,13 @@ $(function(){
             },
             dateClick: function(info){
                 $("#events-dialog").iziModal('open');
-            }
+            },
+            eventSources: [
+                { events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' },
+                { events: meetingArray, color: 'rgb(236, 0, 0)', textColor: 'white' },
+                { events: milestoneArray, color: 'rgb(255, 206, 0)', textColor: 'white' },
+                { events: timeArray, color: 'rgb(162, 0, 255)', textColor: 'white' }
+            ]
         });
         calendar.render();
     }

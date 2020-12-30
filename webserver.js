@@ -2,15 +2,17 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
-const socketIo = require("socket.io");
+const socketio = require("socket.io");
 const http = require("http");
 const cors = require("cors");
 const { ObjectId } = require("bson");
 const saltRounds = 10;
 const app = express();
 const server = http.createServer(app);
+const io = socketio(server, { cors: { origin: '*' } });
 const port = 9000;
 const dbUrl = "mongodb+srv://user:userPassword@teamup.lp8bc.mongodb.net/TeamUp?retryWrites=true&w=majority";
+var socketDict = [];
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -36,31 +38,29 @@ const teamsSchema = new mongoose.Schema({
     tasks: [{
         task: { type: String, required: true, trim: true }
     }],
-    events: [{
-        meetings: [{
-            title: { type: String, required: true, trim: true },
-            start: { type: Date, required: true, min: Date.now },
-            end: { type: Date, requried: true, min: Date.now },
-            allDay: { type: Boolean, default: false }
-        }],
-        holidays: [{
-            title: { type: String, required: true, trim: true },
-            start: { type: Date, required: true, min: Date.now },
-            end: { type: Date, requried: true, min: Date.now },
-            allDay: { type: Boolean, default: true }
-        }],
-        milestones: [{
-            title: { type: String, required: true, trim: true },
-            start: { type: Date, required: true, min: Date.now },
-            end: { type: Date, requried: true, min: Date.now },
-            allDay: { type: Boolean, default: true }
-        }],
-        times: [{
-            title: { type: String, required: true, trim: true },
-            start: { type: Date, required: true, min: Date.now },
-            end: { type: Date, requried: true, min: Date.now },
-            allDay: { type: Boolean, default: false }
-        }]
+    meetings: [{
+        title: { type: String, required: true, trim: true },
+        start: { type: Date, required: true, min: Date.now },
+        end: { type: Date, requried: true, min: Date.now },
+        allDay: { type: Boolean, default: false }
+    }],
+    holidays: [{
+        title: { type: String, required: true, trim: true },
+        start: { type: Date, required: true, min: Date.now },
+        end: { type: Date, requried: true, min: Date.now },
+        allDay: { type: Boolean, default: true }
+    }],
+    milestones: [{
+        title: { type: String, required: true, trim: true },
+        start: { type: Date, required: true, min: Date.now },
+        end: { type: Date, requried: true, min: Date.now },
+        allDay: { type: Boolean, default: true }
+    }],
+    times: [{
+        title: { type: String, required: true, trim: true },
+        start: { type: Date, required: true, min: Date.now },
+        end: { type: Date, requried: true, min: Date.now },
+        allDay: { type: Boolean, default: false }
     }]
 });
 const teamModel = mongoose.model("Teams", teamsSchema);
@@ -153,7 +153,7 @@ app.post("/login", async function(req, res){
     let email = req.body.email;
     let password = req.body.password;
 
-    var user = await credentialModel.findOne({ email: email });
+    let user = await credentialModel.findOne({ email: email });
     if(!user){
         return res.json({ status: 400, message: "incorrectEmail"});
     }
@@ -161,10 +161,26 @@ app.post("/login", async function(req, res){
         return res.json({ status: 400, message: "incorrectPassword" });
     }
     else{
-        return res.json({ status: 200 });
+        let team = await teamModel.findOne({ _id: user.teamId });
+        let teamUser = team.users.find(user => user.email == email);
+        return res.json({
+            status: 200, 
+            teamName: team.name,
+            tasks: team.tasks,
+            meetings: team.meetings,
+            holidays: team.holidays,
+            milestones: team.milestones,
+            times: team.times,
+            notifications: teamUser.notifications
+        });
     }
 });
-//user = find them in database.
-//bcrypt.compare(input password, user.password)
+
+io.on("connection", function(socket){
+    socket.on('join', function(data){
+        socket.join(data.room);
+        socketDict.push({ socketId: socket.id, email: data.email });
+    });
+});
 
 server.listen(port);

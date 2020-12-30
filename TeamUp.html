@@ -22,6 +22,8 @@
     <script src="node_modules/easytimer.js/dist/easytimer.min.js"></script>
     <!-- Validator.js -->
     <script src="node_modules/validator/validator.min.js"></script>
+    <!-- Socket.io -->
+    <script src="node_modules/socket.io/client-dist/socket.io.min.js"></script>
     <!-- Application stylesheet and script -->
     <script src="TeamUp.js"></script>
     <link rel="stylesheet" href="TeamUp.css">
@@ -34,7 +36,6 @@
     <!-- Menu buttons -->
     <div id="menu-buttons">
         <input type="image" id="notifications" src="Icons/icons8-notification-100.png" data-iziModal-open="#notifications-dialog" />
-        <input type="image" id="settings" src="Icons/icons8-settings-100.png" data-izimodal-open="#settings-dialog" />
     </div>
 
     <!-- To do list -->
@@ -108,33 +109,6 @@
         </section>
     </div>
 
-    <!-- Settings dialog -->
-    <div id="settings-dialog" data-iziModal-group="group2">
-        <header>
-            <h1>Settings</h1>
-            <i data-iziModal-close class="mdi mdi-close hvr-grow"></i>
-        </header>
-        <section>
-            <label for="settings-display-name">Change Display Name:</label>
-            <input type="text" id="settings-display-name" placeholder="Enter New Display Name..." />
-            <h1>Notification settings:</h1>
-            <div class="pretty p-switch modal-sub-div">
-                <input type="checkbox">
-                <div class="state p-info">
-                    <label class="check-label">Receive new event notifications?</label>
-                </div>
-            </div>
-            <div class="pretty p-switch modal-sub-div">
-                <input type="checkbox">
-                <div class="state p-info">
-                    <label class="check-label">Receive new task notifications?</label>
-                </div>
-            </div>
-            <footer>
-                <button class="submit hvr-grow">Save</button>
-            </footer>
-        </section>
-    </div>
     <!-- Notifications dialog -->
     <div id="notifications-dialog" data-iziModal-group="group3">
         <header>
