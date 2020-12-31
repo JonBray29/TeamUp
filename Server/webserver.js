@@ -205,6 +205,4 @@ io.on('connection', function(socket){
     //ON DISCONNECT REMOVE THE SOCKET FROM THE SOCKET DICT
 });
 
-app.listen(process.env.PORT || port, function(){
-    console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
-  });
+app.listen(process.env.PORT || port);
