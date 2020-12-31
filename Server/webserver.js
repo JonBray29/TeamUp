@@ -187,6 +187,10 @@ app.post("/login", async function(req, res){
     }
 });
 
+app.get('/', function(req, res){
+    res.send("Hello");
+});
+
 io.on('connection', function(socket){
     let socketEmail;
     socket.on('join', function(data){
