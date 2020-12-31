@@ -25,7 +25,6 @@
   },
   "devDependencies": {},
   "scripts": {
-    "postinstall": "npm install",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webserver.js"
   },
