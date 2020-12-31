@@ -1,13 +1,10 @@
 $(function(){
-    var socket;
     var calendar;
     //Declare arrays
     var holidayArray = [];
     var meetingArray = [];
     var milestoneArray = [];
     var timeArray = [];
-    var tasksArray = [];
-    var notificationsArray = [];
     //Start the time
     showTimeAndDate();
     showCalendar();
@@ -59,11 +56,7 @@ $(function(){
                         localStorage.setItem("email", $("#login-email").val());
                     }
                     handleArrays(res);
-                    socket = io("http://localhost:9000");
-                    socket.on ("connect", function(){
-                        socket.emit('join', { room: res.teamName, email: $("#login-email").val() });
-                    });
-                    //set all variables
+                    openSocket(res);               
                     $("#login-modal").iziModal("close");
                 }
                 else if(res.status == 400){
@@ -77,18 +70,19 @@ $(function(){
     }); 
     //Handle arrays and set tasks, calendar and notifications
     function handleArrays(res){
-        setTasks(res.tasks);
-        setNotifications(res.notifications);
+        res.tasks.forEach(function(task){
+            setTask(task);
+        });
+        res.notifications.forEach(function(notification){
+            setNotification(notification);
+        });
         calendar.refetchEvents();
     }
-    function setTasks(tasks){
-        tasks.forEach(function(task){
-            $("#todo-list").append("<li class=\"list-item\">" + task.task + "</li>")
-        });
+    function setTask(task){
+        $("#todo-list").append("<li class=\"list-item\">" + task.task + "</li>")
     }
-    function setNotifications(notifications){
-        notifications.forEach(function(notification){
-            let time = "<time>" + moment(notification.date).format("MMM Do YYYY @ HH:mm") + "</time>";
+    function setNotification(notification){
+        let time = "<time>" + moment(notification.date).format("MMM Do YYYY @ HH:mm") + "</time>";
             let dismiss = "<button class='hvr-grow dismiss'>Dismiss</button>";
             let accept = "<button class='hvr-grow accept'>Accept</button>";
             let reject = "<button class='hvr-grow reject'>Reject</button>";
@@ -97,10 +91,9 @@ $(function(){
                 $("#notifications-dialog").find("section").append("<div>" + title + time + dismiss + "</div>");
             }
             else{
-                let title = "<h1>" + "New Request: " + notification.message + "</h1>";
+                let title = "<h1>" + "New Request: " + notification.userEmail + "</h1>";
                 $("#notifications-dialog").find("section").append("<div>" + title + time + reject + accept + "</div>");
             }
-        });
     }
     
     $("#login-modal").on('click', '.submit-signup', function(e){
@@ -161,8 +154,9 @@ $(function(){
                 });
             }
             else{
+                let notification = { type: "Request", message: "request", date: moment().format(), userEmail: $("#signup-email").val() };
                 //join team
-                $.post("http://localhost:9000/joinTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val()}, function(res){
+                $.post("http://localhost:9000/joinTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val(), notification: notification }, function(res){
                     
                     switch(res.status){
                         case 200: 
@@ -190,10 +184,10 @@ $(function(){
             $("label[for=signup-team]").append("<span class='validation'> Team does not exist.</span>");
         }
         else if(res.message == "incorrectEmail"){
-            $("label[for=login-email]").append("<span class='valid'> Email entered is not registered.</span>");
+            $("label[for=login-email]").append("<span class='validation'> Email entered is not registered.</span>");
         }
         else if(res.message == "incorrectPassword"){
-            $("label[for=login-password]").append("<span class='valid'> Password is incorrect.</span>");
+            $("label[for=login-password]").append("<span class='validation'> Password is incorrect.</span>");
         }
     }
     function signUpSuccess(email){
@@ -212,6 +206,7 @@ $(function(){
     });
     $("#notifications-dialog").on('click', '.dismiss', function(e){
         $(this).parent('div').remove();
+        //REMOVE EVENT FROM NOTIFICATIONS ARRAY
     });
     $("#notifications-dialog").on('click', '.accept', function(e){
         //ACCEPT THE REQUEST ----------------------------------------------------------------------
@@ -226,7 +221,27 @@ $(function(){
     //Event dialog
     $("#events-dialog").iziModal({
         overlayClose: true,
-        overlayColor: 'rgba(0, 0, 0, 0.6'
+        overlayColor: 'rgba(0, 0, 0, 0.6',
+        focusInput: false
+    });
+    const startDate = flatpickr("#event-start", {
+        enableTime: true,
+        time_24hr: true,
+        altInput: true,
+        altFormat: "H:i - l J F Y",
+        dateFormat: "Z",
+        minDate: "today",
+        onChange: function(selected, dateString, instance){
+            endDate.config.minDate = dateString;
+        }
+    });
+    const endDate = flatpickr("#event-end", {
+        enableTime: true,
+        time_24hr: true,
+        altInput: true,
+        altFormat: "H:i - l J F Y",
+        dateFormat: "Z",
+        minDate: "today"
     });
     //Gets the current time and date and displays it, updates it every second.
     function showTimeAndDate(){
@@ -378,6 +393,30 @@ $(function(){
         }
         else{
             console.log('Please enter an task title'); //CHANGE ERROR MESSAGE, RED OUTLINE ON THE BOX ----------
+        }
+    });
+    function openSocket(res){
+        let socket = io("http://localhost:9000");
+
+        socket.on ("connect", function(){
+            socket.emit('join', { room: res.teamName, email: $("#login-email").val() });
+            socket.on("Notification", function(notification){
+                console.log("hello");
+                setNotification(notification);
+            });
+        });
+    }
+    
+    const observer = new MutationObserver(function(){
+        $("#notifications-dialog").trigger("mutated");
+    });
+    observer.observe($("#notifications-dialog")[0], { childList: true, subtree: true });
+    $("#notifications-dialog").on("mutated", function(){
+        if($("#notifications-dialog").find("section").find("div").length != 0){
+            $("#notifications").attr("src", "Icons/icons8-notification-100-red.png");
+        }
+        else{
+            $("#notifications").attr("src", "Icons/icons8-notification-100.png");
         }
     });
 })

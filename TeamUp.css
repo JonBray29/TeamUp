@@ -289,7 +289,7 @@ body {
 /* Events dialog */
 #events-dialog {
     background: rgba(79, 79, 79, 1);
-    width: 50vh;
+    width: 70vh;
 }
 #events-dialog .iziModal-content header {
     overflow: hidden;
@@ -317,6 +317,29 @@ body {
     text-align: center;
     line-height: 2vw;
 }
+#events-dialog .iziModal-content section label {
+    font-size: 1.5vw;
+}
+#events-dialog .iziModal-content section input,
+#events-dialog .iziModal-content section select {
+    width: 90%;
+    margin-bottom: 3vh;
+    padding: 0.5vw 0.5vw;
+    text-align: center;
+    font-size: 1.5vw;
+    font-family: inherit;
+    background: transparent;
+    border: solid 0.5px rgba(255, 255, 255, 0.5);
+    color: white;
+    cursor: pointer;
+}
+#events-dialog .iziModal-content section select {
+    text-align-last: center;
+}
+#events-dialog .iziModal-content section input:focus{
+    border-color: rgba(255, 255, 255, 1);
+}
+
 #events-dialog .iziModal-content section footer{
     overflow: hidden;
     padding: 1vw;

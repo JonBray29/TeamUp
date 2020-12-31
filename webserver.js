@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const socketio = require("socket.io");
 const http = require("http");
 const cors = require("cors");
+const moment = require("moment");
 const { ObjectId } = require("bson");
 const saltRounds = 10;
 const app = express();
@@ -12,7 +13,8 @@ const server = http.createServer(app);
 const io = socketio(server, { cors: { origin: '*' } });
 const port = 9000;
 const dbUrl = "mongodb+srv://user:userPassword@teamup.lp8bc.mongodb.net/TeamUp?retryWrites=true&w=majority";
-var socketDict = [];
+
+var socketMap = new Map();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -122,6 +124,7 @@ app.post("/joinTeam", async function(req, res){
     let teamName = req.body.teamName;
     let email = req.body.email;
     let pass = req.body.pass;
+    let notification = req.body.notification;
 
     if(await credentialModel.countDocuments({ email: email }) != 0){
         return res.json({ status: 400, message: "email" });
@@ -139,6 +142,14 @@ app.post("/joinTeam", async function(req, res){
         let team = await teamModel.findOne({ name: teamName });
         createCredentials(email, pass, team._id);
         //Add notification to admins notifications, web socket send the notification. ----------------------------------------------------------------
+        let admin = team.users.find(user => user.type == "Admin");
+        admin.notifications.push(notification);
+        if(socketMap.has(admin.email)){
+            console.log("hello");
+            io.sockets.to(socketMap.get(admin.email)).emit("Notification", notification);
+        }
+        
+        team.save();
         return res.json({ status: 200 });
     }
 });
@@ -176,11 +187,18 @@ app.post("/login", async function(req, res){
     }
 });
 
-io.on("connection", function(socket){
+io.on('connection', function(socket){
+    let socketEmail;
     socket.on('join', function(data){
         socket.join(data.room);
-        socketDict.push({ socketId: socket.id, email: data.email });
+        socketMap.set(data.email, socket.id);
+        socketEmail = data.email;
+
+    }); 
+    socket.on('disconnect', function(reason){
+        socketMap.delete(socketEmail);
     });
+    //ON DISCONNECT REMOVE THE SOCKET FROM THE SOCKET DICT
 });
 
 server.listen(port);

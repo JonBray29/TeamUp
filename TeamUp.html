@@ -14,7 +14,10 @@
     <link href="node_modules/fullcalendar/main.css" rel="stylesheet" />
     <script src="node_modules/fullcalendar/main.min.js"></script>
     <!-- Moment -->
-    <script src="node_modules/moment/dist/moment.js"></script>
+    <script src="node_modules/moment/moment.js"></script>
+    <!-- flatpickr -->
+    <script src="node_modules/flatpickr/dist/flatpickr.min.js"></script>
+    <link href="node_modules/flatpickr/dist/themes/dark.css" rel="stylesheet" />
     <!-- Modal dialogs -->
     <link href="node_modules/izimodal/css/iziModal.min.css" rel="stylesheet" />
     <script src="node_modules/izimodal/js/iziModal.min.js"></script>
@@ -127,10 +130,18 @@
             <i data-iziModal-close class="mdi mdi-close hvr-grow"></i>
         </header>
         <section>
-            <h1>Start date</h1>
-            <h1>Start time</h1>
-            <h1>End date</h1>
-            <h1>End time</h1>
+            <label for="event-start">Start: </label>
+            <input type="text" id="event-start" placeholder="Select start date and time" />
+            <label for="event-end">End: </label>
+            <input type="text" id="event-end" placeholder="Enter End date and time" />
+            <label for="event-type">Type: </label>
+            <br>
+            <select id="event-type">
+                <option value="" selected disabled hidden>Select type...</option>
+                <option value="holiday">Holiday</option>
+                <option value="meeting">Meeting</option>
+                <option value="milestone">Milestone</option>
+            </select>
             <footer>
                 <button class="hvr-grow">Save changes</button>
             </footer>
