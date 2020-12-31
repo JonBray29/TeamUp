@@ -187,7 +187,9 @@ app.post("/login", async function(req, res){
     }
 });
 
-app.get('/', (req, res) => { res.send('Hello from Express!')});
+app.get('/', function(req, res){
+    res.send("Hello");
+});
 
 io.on('connection', function(socket){
     let socketEmail;
