@@ -1,3 +1,4 @@
 {
-    "javascript.suggest.autoImports": false
+    "javascript.suggest.autoImports": false,
+    "git.ignoreLimitWarning": true
 }
