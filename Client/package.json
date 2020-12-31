@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Client side application code for teamup",
   "main": "TeamUp.js",
+  "engines": {
+    "node": "14.15.2",
+    "npm": "6.14.9"
+  },
   "dependencies": {
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
