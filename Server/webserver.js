@@ -201,4 +201,4 @@ io.on('connection', function(socket){
     //ON DISCONNECT REMOVE THE SOCKET FROM THE SOCKET DICT
 });
 
-server.listen(port);
+server.listen(process.env.PORT || port);
