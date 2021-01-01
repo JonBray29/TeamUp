@@ -198,7 +198,24 @@ io.on('connection', function(socket){
     socket.on('disconnect', function(reason){
         socketMap.delete(socketEmail);
     });
-    //ON DISCONNECT REMOVE THE SOCKET FROM THE SOCKET DICT
+    socket.on('New Task', function(){
+        //Create new task in db
+        //Send task to all in room including sender.
+    });
+    socket.on('Accept User', function(id){
+        //Accept user
+    });
+    socket.on('Reject User', function(id){
+        //Reject user, delete user from array
+    });
+    socket.on('Remove', function(data){
+        if(date.type == "Notification"){
+            //Remove notification by id
+        }
+        else if(data.type == "Task"){
+            //Remove task by id
+        }
+    });
 });
 
 server.listen(port);

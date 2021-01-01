@@ -4,6 +4,7 @@
   "description": "TeamUp is a team productivity application which includes the follwoing features:   - A calendar which each team member can add to.   - A to-do list which each team member can add to and edit.   - Time tracking for each team member for each task and overall time spent doing work.",
   "main": "TeamUp.js",
   "dependencies": {
+    "@mdi/font": "^5.8.55",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
@@ -12,9 +13,9 @@
     "flatpickr": "^4.6.9",
     "fullcalendar": "^5.4.0",
     "izimodal": "^1.5.1",
-    "mongoose": "^5.11.8",
     "moment": "^2.29.1",
     "mongodb": "^3.6.3",
+    "mongoose": "^5.11.8",
     "pretty-checkbox": "^3.0.3",
     "socket.io": "^3.0.4",
     "validator": "^13.5.2"

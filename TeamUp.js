@@ -1,4 +1,65 @@
 $(function(){
+    //Classes
+    //Notification - type, message, date, userEmail
+    class Notification {
+        constructor(type, message, date, userEmail) {
+            this.type = type;
+            this.message = message;
+            this.date = date;
+            this.userEmail = userEmail;
+        }
+    }
+    //Events, factory?
+    class event{
+        constructor(title, start, end, allDay){
+            this.title = title;
+            this.start = start;
+            this.end = end;
+            this.allDay = allDay;
+        }
+    }
+    class Holiday extends Event{
+        constructor(title, start, end, allDay){
+            super(title, start, end, allDay);
+        }
+    }
+    class Meeting extends Event{
+        constructor(title, start, end, allDay){
+            super(title, start, end, allDay);
+        }
+    }
+    class Milestone extends Event{
+        constructor(title, start, end, allDay){
+            super(title, start, end, allDay);
+        }
+    }
+    class Time extends Event{
+        constructor(title, start, end, allDay){
+            super(title, start, end, allDay);
+        }
+    }
+    class EventsFactory {
+        constructor(type, title, start, end, allDay){
+            switch(type){
+                case "Holiday":
+                    return new Holiday(title, start, end, allDay);
+                break;
+                case "Meeting":
+                    return new Meeting(title, start, end, allDay);
+                break;
+                case "Milestone":
+                    return new Milestone(title, start, end, allDay);
+                break;
+                case "Time":
+                    return new Time(title, start, end, allDay);
+                break;
+                default: 
+                    console.log("Event not found.");
+            }
+        }
+    }
+    //Global variables
+    var socket;
     var calendar;
     //Declare arrays
     var holidayArray = [];
@@ -76,23 +137,28 @@ $(function(){
         res.notifications.forEach(function(notification){
             setNotification(notification);
         });
+        holidayArray = res.holidays;
+        meetingArray = res.meetings;
+        milestoneArray = res.milestones;
+        timeArray = res.times;
         calendar.refetchEvents();
     }
     function setTask(task){
-        $("#todo-list").append("<li class=\"list-item\">" + task.task + "</li>")
+        $("#todo-list").append("<li id='" + task._id + "' class=\"list-item\">" + task.task + "</li>")
     }
     function setNotification(notification){
         let time = "<time>" + moment(notification.date).format("MMM Do YYYY @ HH:mm") + "</time>";
             let dismiss = "<button class='hvr-grow dismiss'>Dismiss</button>";
             let accept = "<button class='hvr-grow accept'>Accept</button>";
             let reject = "<button class='hvr-grow reject'>Reject</button>";
+            let id = notification._id;
             if(notification.type == "Event"){
                 let title = "<h1>" + "New event: " + notification.message + "</h1>";
-                $("#notifications-dialog").find("section").append("<div>" + title + time + dismiss + "</div>");
+                $("#notifications-dialog").find("section").append("<div id='id'>" + title + time + dismiss + "</div>");
             }
             else{
                 let title = "<h1>" + "New Request: " + notification.userEmail + "</h1>";
-                $("#notifications-dialog").find("section").append("<div>" + title + time + reject + accept + "</div>");
+                $("#notifications-dialog").find("section").append("<div id='" + id + "'>" + title + time + reject + accept + "</div>");
             }
     }
     
@@ -205,17 +271,21 @@ $(function(){
         transitionOut: 'fadeOutUp'
     });
     $("#notifications-dialog").on('click', '.dismiss', function(e){
+        let id = $(this).parent('div').attr('id');
+
+        removeItem("Notification", id);
         $(this).parent('div').remove();
-        //REMOVE EVENT FROM NOTIFICATIONS ARRAY
     });
     $("#notifications-dialog").on('click', '.accept', function(e){
-        //ACCEPT THE REQUEST ----------------------------------------------------------------------
-
+        let id = $(this).parent('div').attr('id');
+        socket.emit("Accept User", id);
+        removeItem("Notification", id);
         $(this).parent('div').remove();
     });
     $("#notifications-dialog").on('click', '.reject', function(e){
-        //REJECT THE REQUEST ---------------------------------------------------------------------
-
+        let id = $(this).parent('div').attr('id');
+        socket.emit("Reject User", id);
+        removeItem("Notification", id);
         $(this).parent('div').remove();
     });
     //Event dialog
@@ -333,15 +403,8 @@ $(function(){
             $("#new-task").addClass("new-task");
         }
     });
-    //Add task to list
-    function addTask(){
-        let newTask = $("#new-task").html();
-        $("#todo-list").append("<li class=\"list-item\">" + newTask + "</li>")
-
-        //ALSO ADD THE TASK TO THE WEBSERVER TO ADD TO DATABASE AND OTHER CLIENTS ---------------------------
-    }
-    var removeItem;
     //On list item click strikethrough the task
+    var removeItem;
     $("#todo-list").on('click', function(event){
         let target = $(event.target);
         if(target.hasClass("list-item")){
@@ -349,7 +412,10 @@ $(function(){
             
             if(target.hasClass("checked")){
                 target.fadeTo(5000, 0.5);
-                removeItem = setTimeout(function(){ target.remove() }, 5000);  //Mark task as complete in DB ------------
+                removeItem = setTimeout(function(){
+                    removeItem("Task", target.attr(id));
+                    target.remove();
+                }, 5000);
             }
         }
     });
@@ -395,18 +461,6 @@ $(function(){
             console.log('Please enter an task title'); //CHANGE ERROR MESSAGE, RED OUTLINE ON THE BOX ----------
         }
     });
-    function openSocket(res){
-        let socket = io("http://localhost:9000");
-
-        socket.on ("connect", function(){
-            socket.emit('join', { room: res.teamName, email: $("#login-email").val() });
-            socket.on("Notification", function(notification){
-                console.log("hello");
-                setNotification(notification);
-            });
-        });
-    }
-    
     const observer = new MutationObserver(function(){
         $("#notifications-dialog").trigger("mutated");
     });
@@ -419,4 +473,22 @@ $(function(){
             $("#notifications").attr("src", "Icons/icons8-notification-100.png");
         }
     });
+    //Socket.io code
+    function openSocket(res){
+        socket = io("http://localhost:9000");
+
+        socket.on ("connect", function(){
+            socket.emit('join', { room: res.teamName, email: $("#login-email").val() });
+            socket.on("Notification", function(notification){
+                console.log("hello");
+                setNotification(notification);
+            });
+        });
+        socket.on("Send Task", function(task){
+            setTask(task);
+        })
+    }
+    function removeItem(type, id){
+        socket.emit('Remove', { type: type, id: id });
+    }
 })
