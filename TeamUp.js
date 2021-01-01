@@ -220,7 +220,7 @@ $(function(){
                 });
             }
             else{
-                let notification = { type: "Request", message: "request", date: moment().format(), userEmail: $("#signup-email").val() };
+                let notification = new Notification("Request", "Request", moment().format(), $("#signup-email").val());
                 //join team
                 $.post("http://localhost:9000/joinTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val(), notification: notification }, function(res){
                     
@@ -387,9 +387,10 @@ $(function(){
         if(e.which == 13){
             e.preventDefault();
             if(!validator.isEmpty($("#new-task").text())){
-                addTask();
+                socket.emit("New Task", $("#new-task").text());
+                //SEND NOTIFICATION ----------------------------------------------------------------------------------------------------------------
             }
-            $("#new-task").html("");
+            $("#new-task").text("");
         }
     })
     //On focus out of new task change class
@@ -478,9 +479,8 @@ $(function(){
         socket = io("http://localhost:9000");
 
         socket.on ("connect", function(){
-            socket.emit('join', { room: res.teamName, email: $("#login-email").val() });
+            socket.emit('join', { teamId: res.teamId, email: $("#login-email").val() });
             socket.on("Notification", function(notification){
-                console.log("hello");
                 setNotification(notification);
             });
         });

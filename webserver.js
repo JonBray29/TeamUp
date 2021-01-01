@@ -141,12 +141,11 @@ app.post("/joinTeam", async function(req, res){
         )
         let team = await teamModel.findOne({ name: teamName });
         createCredentials(email, pass, team._id);
-        //Add notification to admins notifications, web socket send the notification. ----------------------------------------------------------------
         let admin = team.users.find(user => user.type == "Admin");
         admin.notifications.push(notification);
+        let tempNotification = admin.notifications.find(notification => notification == notification);
         if(socketMap.has(admin.email)){
-            console.log("hello");
-            io.sockets.to(socketMap.get(admin.email)).emit("Notification", notification);
+            io.sockets.to(socketMap.get(admin.email)).emit("Notification", tempNotification);
         }
         
         team.save();
@@ -176,7 +175,7 @@ app.post("/login", async function(req, res){
         let teamUser = team.users.find(user => user.email == email);
         return res.json({
             status: 200, 
-            teamName: team.name,
+            teamId: team._id,
             tasks: team.tasks,
             meetings: team.meetings,
             holidays: team.holidays,
@@ -187,18 +186,32 @@ app.post("/login", async function(req, res){
     }
 });
 
-io.on('connection', function(socket){
-    let socketEmail;
-    socket.on('join', function(data){
-        socket.join(data.room);
-        socketMap.set(data.email, socket.id);
-        socketEmail = data.email;
+class SocketData {
+    constructor(id, email){
+        this.teamId = id;
+        this.email = email;
+    }
+}
 
+io.on('connection', function(socket){
+    let socketData;
+    socket.on('join', async function(data){
+        socket.join(data.teamId);
+        socketMap.set(data.email, socket.id);
+        socketData = new SocketData(data.teamId, data.email);
     }); 
     socket.on('disconnect', function(reason){
-        socketMap.delete(socketEmail);
+        socketMap.delete(socketData.email);
     });
-    socket.on('New Task', function(){
+    socket.on('New Task', async function(task){
+        let newTask = { _id: mongoose.Types.ObjectId(), task: task};
+        let h = await teamModel.updateOne(
+            { _id: socketData.teamId },
+            { $push: { tasks: newTask}}
+        );
+        //let tempTask = await socketData.team.tasks.find(task => task == task.task);
+        //console.log(tempTask);
+        io.in(socketData.teamId).emit('Send Task', newTask);
         //Create new task in db
         //Send task to all in room including sender.
     });
