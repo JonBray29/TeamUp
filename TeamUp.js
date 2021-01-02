@@ -317,6 +317,21 @@ $(function(){
         dateFormat: "Z",
         minDate: "today"
     });
+    $("#events-dialog").on('click', '.save-event', function(e){
+        let start = startDate.formatDate(startDate.selectedDates[0], "Z");
+        console.log(start);
+        let isValidated = true;
+
+        
+        //Validate that start date has been set and is in the future
+        //Validate that end date has been set and is in the future and is after the start date
+        //validate that one of the options has been selected.
+
+        //save event to correct array 
+        //emit new event to socket which will save the event to the array in the database and send the event to other sockets
+        //create a ntification for the event.
+        //send notification to the other sockets
+    });
     //Gets the current time and date and displays it, updates it every second.
     function showTimeAndDate(){
         let newDate = new Date();

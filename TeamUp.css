@@ -290,6 +290,7 @@ body {
 #events-dialog {
     background: rgba(79, 79, 79, 1);
     width: 70vh;
+    height: auto;
 }
 #events-dialog .iziModal-content header {
     overflow: hidden;
@@ -319,10 +320,11 @@ body {
 }
 #events-dialog .iziModal-content section label {
     font-size: 1.5vw;
+    width: 100%;
 }
 #events-dialog .iziModal-content section input,
 #events-dialog .iziModal-content section select {
-    width: 90%;
+    width: 95%;
     margin-bottom: 3vh;
     padding: 0.5vw 0.5vw;
     text-align: center;
@@ -396,6 +398,41 @@ body {
 }
 a:link a:visited a:active {
     text-decoration: none;
+}
+/* Flatpickr calendar */
+.flatpickr-calendar,
+.flatpickr-innerContainer,
+.flatpickr-time,
+span.flatpickr-weekday,
+.flatpickr-month,
+.flatpickr-months {
+    background-color: rgb(44, 43, 43);
+}
+.flatpickr-month,
+.flatpickr-months,
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    background: none!important;
+}
+.flatpickr-calendar.arrowTop:after {
+    border-bottom-color: rgb(44, 43, 43);
+}
+.flatpickr-day:hover, 
+.flatpickr-day.nextMonthDay:hover, 
+.flatpickr-day.prevMonthDay:hover,
+.flatpickr-time input:hover,
+.flatpickr-time input:focus
+{
+    background-color: rgba(79, 79, 79, 1);
+    border-color: rgba(79, 79, 79, 1);
+}
+.flatpickr-months .flatpickr-prev-month:hover svg, 
+.flatpickr-months .flatpickr-next-month:hover svg{
+    fill: rgba(79, 79, 79, 1)!important;
+}
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.5);
 }
 /* Hover.css effects */
 /* Grow */
