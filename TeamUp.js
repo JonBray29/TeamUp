@@ -2,11 +2,11 @@ $(function(){
     //Classes
     //Notification - type, message, date, userEmail
     class Notification {
-        constructor(type, message, date, userEmail) {
+        constructor(type, message, date, email) {
             this.type = type;
             this.message = message;
             this.date = date;
-            this.userEmail = userEmail;
+            this.userEmail = email;
         }
     }
     //Events, factory?
@@ -154,7 +154,11 @@ $(function(){
             let id = notification._id;
             if(notification.type == "Event"){
                 let title = "<h1>" + "New event: " + notification.message + "</h1>";
-                $("#notifications-dialog").find("section").append("<div id='id'>" + title + time + dismiss + "</div>");
+                $("#notifications-dialog").find("section").append("<div id='" + id + "'>" + title + time + dismiss + "</div>");
+            }
+            else if(notification.type == "Task"){
+                let title = "<h1>" + "New task: " + "'" + notification.message + "'" + " added by - " + notification.userEmail + "</h1>";
+                $("#notifications-dialog").find("section").append("<div id='" + id + "'>" + title + time + dismiss + "</div>");
             }
             else{
                 let title = "<h1>" + "New Request: " + notification.userEmail + "</h1>";
@@ -255,6 +259,9 @@ $(function(){
         else if(res.message == "incorrectPassword"){
             $("label[for=login-password]").append("<span class='validation'> Password is incorrect.</span>");
         }
+        else if(res.message == "notAccepted"){
+            $("label[for=login-email]").append("<span class='validation'> Account not yet accepted into team.</span>");
+        }
     }
     function signUpSuccess(email){
         $("#login-modal").find("header").find("a").toggleClass("active");
@@ -272,20 +279,17 @@ $(function(){
     });
     $("#notifications-dialog").on('click', '.dismiss', function(e){
         let id = $(this).parent('div').attr('id');
-
         removeItem("Notification", id);
         $(this).parent('div').remove();
     });
     $("#notifications-dialog").on('click', '.accept', function(e){
         let id = $(this).parent('div').attr('id');
         socket.emit("Accept User", id);
-        removeItem("Notification", id);
         $(this).parent('div').remove();
     });
     $("#notifications-dialog").on('click', '.reject', function(e){
         let id = $(this).parent('div').attr('id');
         socket.emit("Reject User", id);
-        removeItem("Notification", id);
         $(this).parent('div').remove();
     });
     //Event dialog
@@ -388,7 +392,9 @@ $(function(){
             e.preventDefault();
             if(!validator.isEmpty($("#new-task").text())){
                 socket.emit("New Task", $("#new-task").text());
-                //SEND NOTIFICATION ----------------------------------------------------------------------------------------------------------------
+
+                notification = new Notification("Task", $("#new-task").text(), moment().format(), "");
+                sendNotification(notification);
             }
             $("#new-task").text("");
         }
@@ -405,16 +411,16 @@ $(function(){
         }
     });
     //On list item click strikethrough the task
-    var removeItem;
     $("#todo-list").on('click', function(event){
         let target = $(event.target);
+
         if(target.hasClass("list-item")){
             target.addClass("checked");
-            
+            removeItem("Task", target.attr('id'));
+
             if(target.hasClass("checked")){
                 target.fadeTo(5000, 0.5);
-                removeItem = setTimeout(function(){
-                    removeItem("Task", target.attr(id));
+                setTimeout(function(){
                     target.remove();
                 }, 5000);
             }
@@ -487,8 +493,21 @@ $(function(){
         socket.on("Send Task", function(task){
             setTask(task);
         })
+        socket.on("Remove Task", function(id){
+            let item = $("#" + id);
+
+            item.addClass("checked");
+            item.fadeTo(5000, 0.5);
+                setTimeout(function(){
+                    removeItem("Task", item.attr('id'));
+                    item.remove();
+                }, 5000);
+        });
     }
     function removeItem(type, id){
         socket.emit('Remove', { type: type, id: id });
+    }
+    function sendNotification(notification){
+        socket.emit('New Notification', notification);
     }
 })
