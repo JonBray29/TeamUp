@@ -295,15 +295,18 @@ body {
 #events-dialog .iziModal-content header {
     overflow: hidden;
     width: 100%;
+    padding-top: 1vw;
+    padding-bottom: 1vw;
 }
-#events-dialog .iziModal-content header h1 {
-    display: block;
-    width: 100%;
+#events-dialog .iziModal-content header input {
+    width: 95%;
     color: white;
-    height: 4vh;
     text-align: center;
     line-height: 4vh;
     font-size: 3vw;
+    background: transparent;
+    font-family: inherit;
+    border: none;
 }
 #events-dialog .iziModal-content header i {
     background: rgba(79, 79, 79, 1);
@@ -318,11 +321,12 @@ body {
     text-align: center;
     line-height: 2vw;
 }
-#events-dialog .iziModal-content section label {
-    font-size: 1.5vw;
+#events-dialog .iziModal-content section label,
+#events-dialog .iziModal-content header label {
+    font-size: 2vw;
     width: 100%;
 }
-#events-dialog .iziModal-content section input,
+#events-dialog .iziModal-content section input:not([id="event-name"]),
 #events-dialog .iziModal-content section select {
     width: 95%;
     margin-bottom: 3vh;

@@ -10,48 +10,49 @@ $(function(){
         }
     }
     //Events, factory?
-    class event{
-        constructor(title, start, end, allDay){
-            this.title = title;
-            this.start = start;
-            this.end = end;
-            this.allDay = allDay;
+    class Event{
+        constructor(id, title, start, end, allDay){
+                this.id = id;
+                this.title = title;
+                this.start = start;
+                this.end = end;
+                this.allDay = allDay;
         }
     }
     class Holiday extends Event{
-        constructor(title, start, end, allDay){
-            super(title, start, end, allDay);
+        constructor(id, title, start, end, allDay){
+            super(id, title, start, end, allDay);
         }
     }
     class Meeting extends Event{
-        constructor(title, start, end, allDay){
-            super(title, start, end, allDay);
+        constructor(id, title, start, end, allDay){
+            super(id, title, start, end, allDay);
         }
     }
     class Milestone extends Event{
-        constructor(title, start, end, allDay){
-            super(title, start, end, allDay);
+        constructor(id, title, start, end, allDay){
+            super(id, title, start, end, allDay);
         }
     }
     class Time extends Event{
-        constructor(title, start, end, allDay){
-            super(title, start, end, allDay);
+        constructor(id, title, start, end, allDay){
+            super(id, title, start, end, allDay);
         }
     }
     class EventsFactory {
-        constructor(type, title, start, end, allDay){
+        constructor(type, id, title, start, end, allDay){
             switch(type){
                 case "Holiday":
-                    return new Holiday(title, start, end, allDay);
+                    return new Holiday(id, title, start, end, allDay);
                 break;
                 case "Meeting":
-                    return new Meeting(title, start, end, allDay);
+                    return new Meeting(id, title, start, end, allDay);
                 break;
                 case "Milestone":
-                    return new Milestone(title, start, end, allDay);
+                    return new Milestone(id, title, start, end, allDay);
                 break;
                 case "Time":
-                    return new Time(title, start, end, allDay);
+                    return new Time(id, title, start, end, allDay);
                 break;
                 default: 
                     console.log("Event not found.");
@@ -318,15 +319,57 @@ $(function(){
         minDate: "today"
     });
     $("#events-dialog").on('click', '.save-event', function(e){
-        let start = startDate.formatDate(startDate.selectedDates[0], "Z");
-        console.log(start);
+        let title;
+        let start;
+        let end;
+        let type;
+        let allDay;
         let isValidated = true;
 
+        if(($("#event-name").val() != "")){
+            title = $("#event-name").val();
+        }
+        else{
+            isValidated = false;
+            //Event title has not been set
+        }
+        if(startDate.selectedDates.length != 0){
+            start = startDate.formatDate(startDate.selectedDates[0], "Z");
+            //validate that this is in the future
+        }
+        else{
+            isValidated = false;
+            //start date has not been set
+        }
+        if(endDate.selectedDates.length != 0){
+            end = endDate.formatDate(endDate.selectedDates[0], "Z");
+            //validate that this is after the start date
+        }
+        else{
+            isValidated = false;
+            //end date has not been set
+        }
+        if($("#event-type").val() != ""){
+            type = $("#event-type").val();
+            if(type == "Holiday") {
+                allDay = true;
+            }
+            else{
+                allDay = false;
+            }
+        }
+        else{
+            isValidated = false;
+            //event type has not been selected
+        }
+        if(isValidated){
+            getNewId(function(id){
+                let newEvent = new EventsFactory(type, id, title, start, end, allDay);
+                console.log(newEvent);
+            });
+        }
         
-        //Validate that start date has been set and is in the future
-        //Validate that end date has been set and is in the future and is after the start date
-        //validate that one of the options has been selected.
-
+        //create event
         //save event to correct array 
         //emit new event to socket which will save the event to the array in the database and send the event to other sockets
         //create a ntification for the event.
@@ -384,7 +427,25 @@ $(function(){
                 omitCommas: true
             },
             dateClick: function(info){
-                $("#events-dialog").iziModal('open');
+                if(!validator.isAfter(info.dateStr)){
+                    iziToast.show({
+                        title: 'Invalid date selection',
+                        message: "Please select a date after today.",
+                        theme: "dark",
+                        iconUrl: "https://img.icons8.com/pastel-glyph/64/ffffff/error--v1.png",
+                        position: "bottomCenter",
+                        pauseOnHover: false,
+                        transitionIn: "fadeInUp",
+                        transitionOut: "fadeOutDown",
+                        color: "#404040",
+                        displayMode: 2
+                    })
+                }
+                else{
+                    console.log(moment(info.dateStr).add(1, "h"));
+                    endDate.setDate(moment(info.dateStr).add(1, "h").format());
+                    $("#events-dialog").iziModal('open');
+                }
             },
             eventSources: [
                 { events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' },
@@ -483,6 +544,11 @@ $(function(){
             console.log('Please enter an task title'); //CHANGE ERROR MESSAGE, RED OUTLINE ON THE BOX ----------
         }
     });
+    async function getNewId(callback){
+        await $.post("http://localhost:9000/id", function(res){
+            callback(res);
+        });
+    }
     const observer = new MutationObserver(function(){
         $("#notifications-dialog").trigger("mutated");
     });

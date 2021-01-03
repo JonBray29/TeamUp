@@ -190,6 +190,10 @@ app.post("/login", async function(req, res){
         }
     }
 });
+//Mongoose object id
+app.post("/id", function(req, res){
+    return res.send(mongoose.Types.ObjectId());
+});
 
 class SocketData {
     constructor(id, email){

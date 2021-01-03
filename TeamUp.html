@@ -18,7 +18,9 @@
     <!-- flatpickr -->
     <script src="node_modules/flatpickr/dist/flatpickr.min.js"></script>
     <link href="node_modules/flatpickr/dist/themes/dark.css" rel="stylesheet" />
-    <!-- Modal dialogs -->
+    <!-- izimodal and izitoast -->
+    <link href="node_modules/izitoast/dist/css/iziToast.min.css" rel="stylesheet" />
+    <script src="node_modules/izitoast/dist/js/iziToast.min.js"></script>
     <link href="node_modules/izimodal/css/iziModal.min.css" rel="stylesheet" />
     <script src="node_modules/izimodal/js/iziModal.min.js"></script>
     <!-- Pretty Checkbox -->
@@ -126,7 +128,7 @@
     <!-- Events dialog -->
     <div id="events-dialog" data-iziModal-group="group4">
         <header>
-            <h1 contenteditable="true">Event name</h1>
+            <input type="text" id="event-name" placeholder="Enter event name..." />
             <i data-iziModal-close class="mdi mdi-close hvr-grow"></i>
         </header>
         <section>
@@ -138,9 +140,9 @@
             <br>
             <select id="event-type">
                 <option value="" selected disabled hidden>Select type...</option>
-                <option value="holiday">Holiday</option>
-                <option value="meeting">Meeting</option>
-                <option value="milestone">Milestone</option>
+                <option value="Holiday">Holiday</option>
+                <option value="Meeting">Meeting</option>
+                <option value="Milestone">Milestone</option>
             </select>
             <footer>
                 <button class="save-event hvr-grow">Save changes</button>
