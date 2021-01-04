@@ -1,0 +1,31 @@
+{
+  "name": "client",
+  "version": "1.0.0",
+  "description": "Teamup client",
+  "main": "TeamUp.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonBray29/TeamUp.git"
+  },
+  "author": "Jon",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JonBray29/TeamUp/issues"
+  },
+  "homepage": "https://github.com/JonBray29/TeamUp#readme",
+  "dependencies": {
+    "@mdi/font": "^5.8.55",
+    "easytimer.js": "^4.3.1",
+    "flatpickr": "^4.6.9",
+    "fullcalendar": "^5.5.0",
+    "izimodal": "^1.5.1",
+    "izitoast": "^1.4.0",
+    "moment": "^2.29.1",
+    "pretty-checkbox": "^3.0.3",
+    "socket.io": "^3.0.4",
+    "validator": "^13.5.2"
+  }
+}

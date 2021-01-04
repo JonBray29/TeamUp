@@ -5,7 +5,6 @@ const bodyParser = require("body-parser");
 const socketio = require("socket.io");
 const http = require("http");
 const cors = require("cors");
-const moment = require("moment");
 const { ObjectId } = require("bson");
 const saltRounds = 10;
 const app = express();
