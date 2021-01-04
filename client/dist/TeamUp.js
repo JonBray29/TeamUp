@@ -148,7 +148,7 @@ $(function(){
         refreshCalendar();
     }
     function setTask(task){
-        $("#todo-list").prepend("<li id='" + task._id + "' class=\"list-item\">" + task.task + "</li>")
+        $("#todo-list").append("<li id='" + task._id + "' class=\"list-item\">" + task.task + "</li>")
     }
     function setNotification(notification){
         let time = "<time>" + moment(notification.date).format("MMM Do YYYY @ HH:mm") + "</time>";
