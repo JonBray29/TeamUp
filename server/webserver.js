@@ -198,9 +198,6 @@ app.post("/login", async function(req, res){
 app.post("/id", function(req, res){
     return res.send(mongoose.Types.ObjectId());
 });
-app.get("/", function(req, res){
-    res.send("Hello");
-});
 
 class SocketData {
     constructor(id, email){
