@@ -344,7 +344,7 @@ body {
     overflow: hidden;
     padding: 1vw;
 }
-#events-dialog .iziModal-content section footer button{
+#events-dialog .iziModal-content section footer button:not([id="delete-event"]) {
     cursor: pointer;
     background: rgba(255, 255, 255, 0.15);
     width: 50%;
@@ -353,6 +353,16 @@ body {
     font-family: inherit;
     background: transparent;
     color: white;
+    padding: 0.5vw;
+}
+#delete-event {
+    position: absolute;
+    bottom: 0.5vw;
+    right: 0.5vw;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    font-size: 2vw;
     padding: 0.5vw;
 }
 /* Calendar styles */
@@ -462,6 +472,9 @@ span.flatpickr-weekday,
 .validation {
     color: rgb(255, 0, 0);
     font-size: 1.5vw;
+}
+.mdi-trash-can-outline {
+    color: rgb(255, 0, 0);
 }
 /* Animations */
 @-moz-keyframes swing {

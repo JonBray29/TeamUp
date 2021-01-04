@@ -144,13 +144,7 @@ $(function(){
         milestoneArray = res.milestones;
         timeArray = res.times;
 
-        calendar.getEventSources().forEach(source => source.remove());
-        calendar.addEventSource({events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' });
-        calendar.addEventSource({ events: meetingArray, color: 'rgb(161, 11, 0)', textColor: 'white' });
-        calendar.addEventSource({ events: milestoneArray, color: 'rgb(8, 133, 43)', textColor: 'white' });
-        calendar.addEventSource({ events: timeArray, color: 'rgb(162, 0, 255)', textColor: 'white' });
-
-        calendar.refetchEvents();
+        refreshCalendar();
     }
     function setTask(task){
         $("#todo-list").prepend("<li id='" + task._id + "' class=\"list-item\">" + task.task + "</li>")
@@ -402,7 +396,20 @@ $(function(){
             $("#events-dialog").iziModal('close');
         }
     });
+    $("#events-dialog").on('click', '#delete-event', function(e){
+        let id = $("#event-id").html();
+        let type = $("#event-type-hidden").html();
+        let title = $("#event-name").val();
 
+        let event = { id: id, type: type } ;
+
+        socket.emit("Delete Event", event);
+
+        let notification = new Notification("Event", "deleted - " + title, moment().format());
+        sendNotification(notification);
+
+        $("#events-dialog").iziModal('close');
+    });
     function eventValidation(){
         let isValidated = true;
         let start;
@@ -521,6 +528,7 @@ $(function(){
                     $("#event-type").removeClass("hide");
                     $("#save-event").removeClass('hide');
                     $("#update-event").addClass('hide');
+                    $("#delete-event").addClass('hide');
                     $("#events-dialog").find("input").removeAttr("disabled");
                     $("#events-dialog").iziModal('open');
                 }
@@ -538,6 +546,7 @@ $(function(){
                     $("#event-type").addClass("hide");
                     $("#save-event").addClass("hide");
                     ("#update-event").addClass("hide");
+                    $("#delete-event").removeClass("hide");
 
                     $("#events-dialog").find("input").attr("disabled", "disabled");
                 }
@@ -546,6 +555,7 @@ $(function(){
                     $("#event-type").addClass("hide");
                     $("#save-event").addClass("hide");
                     $("#update-event").removeClass("hide");
+                    $("#delete-event").removeClass("hide");
 
                     $("#events-dialog").find("input").removeAttr("disabled");
                 }
@@ -563,6 +573,16 @@ $(function(){
             ]
         });
         calendar.render();
+    }
+    function refreshCalendar() {
+
+        calendar.getEventSources().forEach(source => source.remove());
+        calendar.addEventSource({events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' });
+        calendar.addEventSource({ events: meetingArray, color: 'rgb(161, 11, 0)', textColor: 'white' });
+        calendar.addEventSource({ events: milestoneArray, color: 'rgb(8, 133, 43)', textColor: 'white' });
+        calendar.addEventSource({ events: timeArray, color: 'rgb(162, 0, 255)', textColor: 'white' });
+
+        calendar.refetchEvents();
     }
     //Listen for click on add new task
     $("#new-task").on('click', function(){
@@ -715,6 +735,9 @@ $(function(){
         socket.on("Updated Event", function(data){
             updateEvent(data);
         });
+        socket.on("Deleted Event", function(data){
+            deleteEvent(data);
+        })
     }
     function removeItem(type, id){
         socket.emit('Remove', { type: type, id: id });
@@ -740,13 +763,7 @@ $(function(){
                 console.log("Event not found.");
         }
 
-        calendar.getEventSources().forEach(source => source.remove());
-        calendar.addEventSource({events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' });
-        calendar.addEventSource({ events: meetingArray, color: 'rgb(161, 11, 0)', textColor: 'white' });
-        calendar.addEventSource({ events: milestoneArray, color: 'rgb(8, 133, 43)', textColor: 'white' });
-        calendar.addEventSource({ events: timeArray, color: 'rgb(162, 0, 255)', textColor: 'white' });
-
-        calendar.refetchEvents();
+        refreshCalendar()
     }
     function updateEvent(data){
         switch(data.type){
@@ -762,13 +779,24 @@ $(function(){
             default: 
                 console.log("Event not found.");
         }
-
-        calendar.getEventSources().forEach(source => source.remove());
-        calendar.addEventSource({events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' });
-        calendar.addEventSource({ events: meetingArray, color: 'rgb(161, 11, 0)', textColor: 'white' });
-        calendar.addEventSource({ events: milestoneArray, color: 'rgb(8, 133, 43)', textColor: 'white' });
-        calendar.addEventSource({ events: timeArray, color: 'rgb(162, 0, 255)', textColor: 'white' });
-
-        calendar.refetchEvents();
+        refreshCalendar();
+    }
+    function deleteEvent(data){
+        switch(data.type){
+            case "Holiday":
+                holidayArray = data.array;
+            break;
+            case "Meeting":
+                meetingArray = data.array;
+            break;
+            case "Milestone":
+                milestoneArray = data.array;
+            break;
+            case "Time":
+                timeArray = data.array;
+            default: 
+                console.log("Event not found.");
+        }
+        refreshCalendar();
     }
 })

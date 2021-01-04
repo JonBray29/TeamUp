@@ -345,6 +345,38 @@ io.on('connection', function(socket){
 
         io.in(socketData.teamId).emit('Updated Event', { type: type, array: array });
     });
+    socket.on('Delete Event', async function(event){
+        let team = await teamModel.findOne({ _id: socketData.teamId });
+        let type = event.type;
+        let array;
+        switch(type){
+            case "Holiday":
+                team.holidays = team.holidays.filter(e => e._id != event.id);
+
+                array = team.holidays;
+            break;
+            case "Meeting":
+                team.meetings = team.meetings.filter(e => e._id != event.id);
+
+                array = team.meetings;
+                break;
+            case "Milestone":
+                team.milestones = team.milestones.filter(e => e._id != event.id);
+
+                array = team.milestones;
+                break;
+            case "Time":
+                team.times = team.times.filter(e => e._id != event.id);
+
+                array = team.times;
+                break;
+            default: 
+                console.log("Event not found.");
+        }
+        team.save();
+
+        io.in(socketData.teamId).emit('Deleted Event', { type: type, array: array });
+    });
 });
 
 server.listen(port);
