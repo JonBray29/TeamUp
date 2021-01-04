@@ -5,7 +5,7 @@
   "main": "webserver.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node webserver.js",
+    "start": "node --prefix server/webserver.js",
     "heroku-postbuild": "npm install --prefix server"
   },
   "repository": {
