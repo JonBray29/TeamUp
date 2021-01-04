@@ -142,6 +142,13 @@ $(function(){
         meetingArray = res.meetings;
         milestoneArray = res.milestones;
         timeArray = res.times;
+
+        calendar.getEventSources().forEach(source => source.remove());
+        calendar.addEventSource({events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' });
+        calendar.addEventSource({ events: meetingArray, color: 'rgb(161, 11, 0)', textColor: 'white' });
+        calendar.addEventSource({ events: milestoneArray, color: 'rgb(8, 133, 43)', textColor: 'white' });
+        calendar.addEventSource({ events: timeArray, color: 'rgb(162, 0, 255)', textColor: 'white' });
+
         calendar.refetchEvents();
     }
     function setTask(task){
@@ -297,7 +304,15 @@ $(function(){
     $("#events-dialog").iziModal({
         overlayClose: true,
         overlayColor: 'rgba(0, 0, 0, 0.6',
-        focusInput: false
+        focusInput: false, 
+        onClosed: function(){
+            $("#event-name").val('');
+            $("#event-start").val('');
+            $("#event-end").val('');
+            $("#event-type").val('');
+            $("label[for=event-type]").removeClass("hide");
+            $("#event-type").removeClass("hide");
+        }
     });
     const startDate = flatpickr("#event-start", {
         enableTime: true,
@@ -308,6 +323,7 @@ $(function(){
         minDate: "today",
         onChange: function(selected, dateString, instance){
             endDate.config.minDate = dateString;
+            endDate.setDate(moment(dateString).add(1, "h").format());
         }
     });
     const endDate = flatpickr("#event-end", {
@@ -328,29 +344,45 @@ $(function(){
 
         if(($("#event-name").val() != "")){
             title = $("#event-name").val();
+            $("label[for=event-name]").find("span").remove();
         }
         else{
             isValidated = false;
-            //Event title has not been set
+            if($("label[for=event-name] span").length == 0){
+                $("label[for=event-name]").append("<span class='validation'> Ensure you have entered an event name.</span>");
+            }
         }
         if(startDate.selectedDates.length != 0){
             start = startDate.formatDate(startDate.selectedDates[0], "Z");
-            //validate that this is in the future
+            $("label[for=event-start]").find("span").remove();
+            if(!validator.isAfter(start)){
+                isValidated = false;
+                $("label[for=event-start]").append("<span class='validation'> Ensure you have selected a date and time after now.</span>");
+            }
         }
         else{
             isValidated = false;
-            //start date has not been set
+            if($("label[for=event-start] span").length == 0){
+                $("label[for=event-start]").append("<span class='validation'> Ensure you have selected a start date.</span>");
+            }
         }
         if(endDate.selectedDates.length != 0){
             end = endDate.formatDate(endDate.selectedDates[0], "Z");
-            //validate that this is after the start date
+            $("label[for=event-end]").find("span").remove();
+            if(!validator.isAfter(end, start)){
+                isValidated = false;
+                $("label[for=event-end]").append("<span class='validation'> Ensure you have selected a date and time after the start date and time.</span>");
+            }
         }
         else{
             isValidated = false;
-            //end date has not been set
+            if($("label[for=event-end] span").length == 0){
+                $("label[for=event-end]").append("<span class='validation'> Ensure you have selected an end date.</span>");
+            }
         }
         if($("#event-type").val() != ""){
             type = $("#event-type").val();
+            $("label[for=event-type]").find("span").remove();
             if(type == "Holiday") {
                 allDay = true;
             }
@@ -360,20 +392,23 @@ $(function(){
         }
         else{
             isValidated = false;
-            //event type has not been selected
+            if($("label[for=event-type] span").length == 0){
+                $("label[for=event-type]").append("<span class='validation'> Ensure you have selected an event type.</span>");
+            }
         }
         if(isValidated){
             getNewId(function(id){
-                let newEvent = new EventsFactory(type, id, title, start, end, allDay);
-                console.log(newEvent);
+                console.log("hello");
+                let event = new EventsFactory(type, id, title, start, end, allDay);
+                newEvent(type, event);
+
+                socket.emit("Send Event", { type: type, event: event });
+                let notification = new Notification("Event", event.title, moment().format());
+                sendNotification(notification);
+
+                $("#events-dialog").iziModal('close');
             });
         }
-        
-        //create event
-        //save event to correct array 
-        //emit new event to socket which will save the event to the array in the database and send the event to other sockets
-        //create a ntification for the event.
-        //send notification to the other sockets
     });
     //Gets the current time and date and displays it, updates it every second.
     function showTimeAndDate(){
@@ -442,10 +477,23 @@ $(function(){
                     })
                 }
                 else{
-                    console.log(moment(info.dateStr).add(1, "h"));
+                    startDate.setDate(info.dateStr);
                     endDate.setDate(moment(info.dateStr).add(1, "h").format());
                     $("#events-dialog").iziModal('open');
                 }
+            },
+            eventClick: function(info){
+                $("#event-name").val(info.event.title);
+                startDate.setDate(info.event.start);
+                endDate.setDate(info.event.end);
+
+                $("label[for=event-type]").addClass("hide");
+                $("#event-type").addClass("hide");
+
+                $("#events-dialog").iziModal('open');
+            },
+            eventMouseEnter: function(info){
+                $(info.el).addClass("hvr-grow");
             },
             eventSources: [
                 { events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' },
@@ -527,21 +575,38 @@ $(function(){
         $("#pause").toggleClass('hide');
     });
     $("#stop").on('click', function(e){
-        //Else error asking for name of event
         if(!validator.isEmpty($("#time-task").val())){
+            let time = timer.getTotalTimeValues().seconds;
             timer.stop();
-            //ADD TIME EVENT TO CALENDAR AND DB ------------------------------
-            let time = timer.getTimeValues();
-            let title = $("#time-task").val();
-            //let name = localstorage display name -----------------------------
-            
+            $("#play").toggleClass('hide');
+            $("#pause").toggleClass('hide');
+            $("#stop").removeClass('hide');
+            start = moment().subtract(time, "s").format();
+            end = moment().format();
+            title = $("#time-task").val();
+
+            getNewId(function(id){
+                let event = new EventsFactory("Time", id, title, start, end, false);
+                newEvent("Time", event);
+            });
+
             $("#time-task").val('');
             timer.reset();
             timer.pause();
-
         }
         else{
-            console.log('Please enter an task title'); //CHANGE ERROR MESSAGE, RED OUTLINE ON THE BOX ----------
+            iziToast.show({
+                title: 'No time tracking title',
+                message: "Please enter a time tracking task name.",
+                theme: "dark",
+                iconUrl: "https://img.icons8.com/pastel-glyph/64/ffffff/error--v1.png",
+                position: "bottomCenter",
+                pauseOnHover: false,
+                transitionIn: "fadeInUp",
+                transitionOut: "fadeOutDown",
+                color: "#404040",
+                displayMode: 2
+            });
         }
     });
     async function getNewId(callback){
@@ -584,11 +649,40 @@ $(function(){
                     item.remove();
                 }, 5000);
         });
+        socket.on("New Event", function(data){
+            newEvent(data.type, data.event);
+        });
     }
     function removeItem(type, id){
         socket.emit('Remove', { type: type, id: id });
     }
     function sendNotification(notification){
         socket.emit('New Notification', notification);
+    }
+    function newEvent(type, event){
+        switch(type){
+            case "Holiday":
+                holidayArray.push(event);
+            break;
+            case "Meeting":
+                meetingArray.push(event);
+            break;
+            case "Milestone":
+                milestoneArray.push(event);
+            break;
+            case "Time":
+                timeArray.push(event);
+            break;
+            default: 
+                console.log("Event not found.");
+        }
+
+        calendar.getEventSources().forEach(source => source.remove());
+        calendar.addEventSource({events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' });
+        calendar.addEventSource({ events: meetingArray, color: 'rgb(161, 11, 0)', textColor: 'white' });
+        calendar.addEventSource({ events: milestoneArray, color: 'rgb(8, 133, 43)', textColor: 'white' });
+        calendar.addEventSource({ events: timeArray, color: 'rgb(162, 0, 255)', textColor: 'white' });
+
+        calendar.refetchEvents();
     }
 })

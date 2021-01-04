@@ -60,8 +60,8 @@ const teamsSchema = new mongoose.Schema({
     }],
     times: [{
         title: { type: String, required: true, trim: true },
-        start: { type: Date, required: true, min: Date.now },
-        end: { type: Date, requried: true, min: Date.now },
+        start: { type: Date, required: true },
+        end: { type: Date, requried: true},
         allDay: { type: Boolean, default: false }
     }]
 });
@@ -272,6 +272,29 @@ io.on('connection', function(socket){
 
             socket.to(socketData.teamId).emit('Remove Task', data.id);
         }
+    });
+    socket.on('Send Event', async function(data){
+        //Add new event to mongodb 
+        let team = await teamModel.findOne({ _id: socketData.teamId });
+        switch(data.type){
+            case "Holiday":
+                team.holidays.push(data.event);
+            break;
+            case "Meeting":
+                team.meetings.push(data.event);
+            break;
+            case "Milestone":
+                team.milestones.push(data.event);
+            break;
+            case "Time":
+                team.times.push(data.event);
+            break;
+            default: 
+                console.log("Event not found.");
+        }
+        team.save();
+
+        socket.to(socketData.teamId).emit('New Event', data);
     });
 });
 
