@@ -10,7 +10,7 @@ const saltRounds = 10;
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server, { cors: { origin: '*' } });
-const port = 9000;
+const port = process.env.PORT ||9000;
 const dbUrl = "mongodb+srv://user:userPassword@teamup.lp8bc.mongodb.net/TeamUp?retryWrites=true&w=majority";
 
 var socketMap = new Map();
