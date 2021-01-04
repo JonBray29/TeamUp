@@ -44,25 +44,29 @@ const teamsSchema = new mongoose.Schema({
         title: { type: String, required: true, trim: true },
         start: { type: Date, required: true, min: Date.now },
         end: { type: Date, requried: true, min: Date.now },
-        allDay: { type: Boolean, default: false }
+        allDay: { type: Boolean, default: false },
+        type: {type: String, required: true, default: "Meeting" }
     }],
     holidays: [{
         title: { type: String, required: true, trim: true },
         start: { type: Date, required: true, min: Date.now },
         end: { type: Date, requried: true, min: Date.now },
-        allDay: { type: Boolean, default: true }
+        allDay: { type: Boolean, default: true },
+        type: {type: String, required: true, default: "Holiday" }
     }],
     milestones: [{
         title: { type: String, required: true, trim: true },
         start: { type: Date, required: true, min: Date.now },
         end: { type: Date, requried: true, min: Date.now },
-        allDay: { type: Boolean, default: true }
+        allDay: { type: Boolean, default: true },
+        type: {type: String, required: true, default: "Milestone" }
     }],
     times: [{
         title: { type: String, required: true, trim: true },
         start: { type: Date, required: true },
         end: { type: Date, requried: true},
-        allDay: { type: Boolean, default: false }
+        allDay: { type: Boolean, default: false },
+        type: {type: String, required: true, default: "Time" }
     }]
 });
 const teamModel = mongoose.model("Teams", teamsSchema);
@@ -273,28 +277,73 @@ io.on('connection', function(socket){
             socket.to(socketData.teamId).emit('Remove Task', data.id);
         }
     });
-    socket.on('Send Event', async function(data){
+    socket.on('Send Event', async function(event){
         //Add new event to mongodb 
         let team = await teamModel.findOne({ _id: socketData.teamId });
-        switch(data.type){
+        switch(event.type){
             case "Holiday":
-                team.holidays.push(data.event);
+                team.holidays.push(event);
             break;
             case "Meeting":
-                team.meetings.push(data.event);
+                team.meetings.push(event);
             break;
             case "Milestone":
-                team.milestones.push(data.event);
+                team.milestones.push(event);
             break;
             case "Time":
-                team.times.push(data.event);
+                team.times.push(event);
             break;
             default: 
                 console.log("Event not found.");
         }
         team.save();
 
-        socket.to(socketData.teamId).emit('New Event', data);
+        socket.to(socketData.teamId).emit('New Event', event);
+    });
+    socket.on('Update Event', async function(event){
+        let team = await teamModel.findOne({ _id: socketData.teamId });
+        let type = event.type;
+        let array;
+        switch(type){
+            case "Holiday":
+                team.holidays.forEach(function(e){
+                    if(e._id == event.id){
+                        e.title = event.title;
+                        e.start = event.start;
+                        e.end = event.end;
+                    }
+                });
+
+                array = team.holidays;
+            break;
+            case "Meeting":
+                team.meetings.forEach(function(e){
+                    if(e._id == event.id){
+                        e.title = event.title;
+                        e.start = event.start;
+                        e.end = event.end;
+                    }
+                });
+
+                array = team.meetings;
+                break;
+            case "Milestone":
+                team.milestones.forEach(function(e){
+                    if(e._id == event.id){
+                        e.title = event.title;
+                        e.start = event.start;
+                        e.end = event.end;
+                    }
+                });
+
+                array = team.milestones;
+                break;
+            default: 
+                console.log("Event not found.");
+        }
+        team.save();
+
+        io.in(socketData.teamId).emit('Updated Event', { type: type, array: array });
     });
 });
 

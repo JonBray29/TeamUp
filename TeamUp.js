@@ -11,48 +11,49 @@ $(function(){
     }
     //Events, factory?
     class Event{
-        constructor(id, title, start, end, allDay){
-                this.id = id;
+        constructor(id, title, start, end, allDay, type){
+                this._id = id;
                 this.title = title;
                 this.start = start;
                 this.end = end;
                 this.allDay = allDay;
+                this.type = type;
         }
     }
     class Holiday extends Event{
-        constructor(id, title, start, end, allDay){
-            super(id, title, start, end, allDay);
+        constructor(id, title, start, end, allDay, type){
+            super(id, title, start, end, allDay, type);
         }
     }
     class Meeting extends Event{
-        constructor(id, title, start, end, allDay){
-            super(id, title, start, end, allDay);
+        constructor(id, title, start, end, allDay, type){
+            super(id, title, start, end, allDay, type);
         }
     }
     class Milestone extends Event{
-        constructor(id, title, start, end, allDay){
-            super(id, title, start, end, allDay);
+        constructor(id, title, start, end, allDay, type){
+            super(id, title, start, end, allDay, type);
         }
     }
     class Time extends Event{
-        constructor(id, title, start, end, allDay){
-            super(id, title, start, end, allDay);
+        constructor(id, title, start, end, allDay, type){
+            super(id, title, start, end, allDay, type);
         }
     }
     class EventsFactory {
         constructor(type, id, title, start, end, allDay){
             switch(type){
                 case "Holiday":
-                    return new Holiday(id, title, start, end, allDay);
+                    return new Holiday(id, title, start, end, allDay, type);
                 break;
                 case "Meeting":
-                    return new Meeting(id, title, start, end, allDay);
+                    return new Meeting(id, title, start, end, allDay, type);
                 break;
                 case "Milestone":
-                    return new Milestone(id, title, start, end, allDay);
+                    return new Milestone(id, title, start, end, allDay, type);
                 break;
                 case "Time":
-                    return new Time(id, title, start, end, allDay);
+                    return new Time(id, title, start, end, allDay, type);
                 break;
                 default: 
                     console.log("Event not found.");
@@ -152,26 +153,26 @@ $(function(){
         calendar.refetchEvents();
     }
     function setTask(task){
-        $("#todo-list").append("<li id='" + task._id + "' class=\"list-item\">" + task.task + "</li>")
+        $("#todo-list").prepend("<li id='" + task._id + "' class=\"list-item\">" + task.task + "</li>")
     }
     function setNotification(notification){
         let time = "<time>" + moment(notification.date).format("MMM Do YYYY @ HH:mm") + "</time>";
-            let dismiss = "<button class='hvr-grow dismiss'>Dismiss</button>";
-            let accept = "<button class='hvr-grow accept'>Accept</button>";
-            let reject = "<button class='hvr-grow reject'>Reject</button>";
-            let id = notification._id;
-            if(notification.type == "Event"){
-                let title = "<h1>" + "New event: " + notification.message + "</h1>";
-                $("#notifications-dialog").find("section").append("<div id='" + id + "'>" + title + time + dismiss + "</div>");
-            }
-            else if(notification.type == "Task"){
-                let title = "<h1>" + "New task: " + "'" + notification.message + "'" + " added by - " + notification.userEmail + "</h1>";
-                $("#notifications-dialog").find("section").append("<div id='" + id + "'>" + title + time + dismiss + "</div>");
-            }
-            else{
-                let title = "<h1>" + "New Request: " + notification.userEmail + "</h1>";
-                $("#notifications-dialog").find("section").append("<div id='" + id + "'>" + title + time + reject + accept + "</div>");
-            }
+        let dismiss = "<button class='hvr-grow dismiss'>Dismiss</button>";
+        let accept = "<button class='hvr-grow accept'>Accept</button>";
+        let reject = "<button class='hvr-grow reject'>Reject</button>";
+        let id = notification._id;
+        if(notification.type == "Event"){
+            let title = "<h1>" + "New event: " + notification.message + "</h1>";
+            $("#notifications-dialog").find("section").prepend("<div id='" + id + "'>" + title + time + dismiss + "</div>");
+        }
+        else if(notification.type == "Task"){
+            let title = "<h1>" + "New task: " + "'" + notification.message + "'" + " added by - " + notification.userEmail + "</h1>";
+            $("#notifications-dialog").find("section").prepend("<div id='" + id + "'>" + title + time + dismiss + "</div>");
+        }
+        else{
+            let title = "<h1>" + "New Request: " + notification.userEmail + "</h1>";
+            $("#notifications-dialog").find("section").prepend("<div id='" + id + "'>" + title + time + reject + accept + "</div>");
+        }
     }
     
     $("#login-modal").on('click', '.submit-signup', function(e){
@@ -334,16 +335,80 @@ $(function(){
         dateFormat: "Z",
         minDate: "today"
     });
-    $("#events-dialog").on('click', '.save-event', function(e){
+    $("#events-dialog").on('click', '#save-event', function(e){
         let title;
         let start;
         let end;
         let type;
         let allDay;
+
+        let isValidated = eventValidation();
+        
+        if($("#event-type").val() != ""){
+            type = $("#event-type").val();
+            $("label[for=event-type]").find("span").remove();
+            if(type == "Holiday") {
+                allDay = true;
+            }
+            else{
+                allDay = false;
+            }
+        }
+        else{
+            isValidated = false;
+            if($("label[for=event-type] span").length == 0){
+                $("label[for=event-type]").append("<span class='validation'> Ensure you have selected an event type.</span>");
+            }
+        }
+        if(isValidated){
+            title = $("#event-name").val();
+            start = startDate.formatDate(startDate.selectedDates[0], "Z");
+            end = endDate.formatDate(endDate.selectedDates[0], "Z");
+
+
+            getNewId(function(id){
+                let event = new EventsFactory(type, id, title, start, end, allDay);
+                newEvent(event);
+
+                socket.emit("Send Event", event);
+                let notification = new Notification("Event", event.title, moment().format());
+                sendNotification(notification);
+
+                $("#events-dialog").iziModal('close');
+            });
+        }
+    });
+    $("#events-dialog").on('click', '#update-event', function(e){
+        let id;
+        let title;
+        let start;
+        let end;
+        let type;
+        let isValidated = eventValidation();
+
+        if(isValidated){
+            id = $("#event-id").html();
+            title = $("#event-name").val();
+            start = startDate.formatDate(startDate.selectedDates[0], "Z");
+            end = endDate.formatDate(endDate.selectedDates[0], "Z");
+            type = $("#event-type-hidden").html();
+            let event = { id: id, title: title, start: start, end: end, type: type };
+
+            socket.emit("Update Event", event);
+
+            let notification = new Notification("Event", "updated - " + event.title, moment().format());
+            sendNotification(notification);
+
+            $("#events-dialog").iziModal('close');
+        }
+    });
+
+    function eventValidation(){
         let isValidated = true;
+        let start;
+        let end;
 
         if(($("#event-name").val() != "")){
-            title = $("#event-name").val();
             $("label[for=event-name]").find("span").remove();
         }
         else{
@@ -380,36 +445,9 @@ $(function(){
                 $("label[for=event-end]").append("<span class='validation'> Ensure you have selected an end date.</span>");
             }
         }
-        if($("#event-type").val() != ""){
-            type = $("#event-type").val();
-            $("label[for=event-type]").find("span").remove();
-            if(type == "Holiday") {
-                allDay = true;
-            }
-            else{
-                allDay = false;
-            }
-        }
-        else{
-            isValidated = false;
-            if($("label[for=event-type] span").length == 0){
-                $("label[for=event-type]").append("<span class='validation'> Ensure you have selected an event type.</span>");
-            }
-        }
-        if(isValidated){
-            getNewId(function(id){
-                console.log("hello");
-                let event = new EventsFactory(type, id, title, start, end, allDay);
-                newEvent(type, event);
 
-                socket.emit("Send Event", { type: type, event: event });
-                let notification = new Notification("Event", event.title, moment().format());
-                sendNotification(notification);
-
-                $("#events-dialog").iziModal('close');
-            });
-        }
-    });
+        return isValidated;
+    }
     //Gets the current time and date and displays it, updates it every second.
     function showTimeAndDate(){
         let newDate = new Date();
@@ -479,6 +517,11 @@ $(function(){
                 else{
                     startDate.setDate(info.dateStr);
                     endDate.setDate(moment(info.dateStr).add(1, "h").format());
+                    $("label[for=event-type]").removeClass("hide");
+                    $("#event-type").removeClass("hide");
+                    $("#save-event").removeClass('hide');
+                    $("#update-event").addClass('hide');
+                    $("#events-dialog").find("input").removeAttr("disabled");
                     $("#events-dialog").iziModal('open');
                 }
             },
@@ -486,9 +529,26 @@ $(function(){
                 $("#event-name").val(info.event.title);
                 startDate.setDate(info.event.start);
                 endDate.setDate(info.event.end);
+                $("#event-id").text(info.event.extendedProps._id);
+                $("#event-type-hidden").text(info.event.extendedProps.type);
 
-                $("label[for=event-type]").addClass("hide");
-                $("#event-type").addClass("hide");
+
+                if(info.event.type == "Time"){
+                    $("label[for=event-type]").addClass("hide");
+                    $("#event-type").addClass("hide");
+                    $("#save-event").addClass("hide");
+                    ("#update-event").addClass("hide");
+
+                    $("#events-dialog").find("input").attr("disabled", "disabled");
+                }
+                else{
+                    $("label[for=event-type]").addClass("hide");
+                    $("#event-type").addClass("hide");
+                    $("#save-event").addClass("hide");
+                    $("#update-event").removeClass("hide");
+
+                    $("#events-dialog").find("input").removeAttr("disabled");
+                }
 
                 $("#events-dialog").iziModal('open');
             },
@@ -587,7 +647,7 @@ $(function(){
 
             getNewId(function(id){
                 let event = new EventsFactory("Time", id, title, start, end, false);
-                newEvent("Time", event);
+                newEvent(event);
             });
 
             $("#time-task").val('');
@@ -649,8 +709,11 @@ $(function(){
                     item.remove();
                 }, 5000);
         });
-        socket.on("New Event", function(data){
-            newEvent(data.type, data.event);
+        socket.on("New Event", function(event){
+            newEvent(event);
+        });
+        socket.on("Updated Event", function(data){
+            updateEvent(data);
         });
     }
     function removeItem(type, id){
@@ -659,8 +722,8 @@ $(function(){
     function sendNotification(notification){
         socket.emit('New Notification', notification);
     }
-    function newEvent(type, event){
-        switch(type){
+    function newEvent(event){
+        switch(event.type){
             case "Holiday":
                 holidayArray.push(event);
             break;
@@ -672,6 +735,29 @@ $(function(){
             break;
             case "Time":
                 timeArray.push(event);
+            break;
+            default: 
+                console.log("Event not found.");
+        }
+
+        calendar.getEventSources().forEach(source => source.remove());
+        calendar.addEventSource({events: holidayArray, color: 'rgb(0, 182, 255)', textColor: 'white' });
+        calendar.addEventSource({ events: meetingArray, color: 'rgb(161, 11, 0)', textColor: 'white' });
+        calendar.addEventSource({ events: milestoneArray, color: 'rgb(8, 133, 43)', textColor: 'white' });
+        calendar.addEventSource({ events: timeArray, color: 'rgb(162, 0, 255)', textColor: 'white' });
+
+        calendar.refetchEvents();
+    }
+    function updateEvent(data){
+        switch(data.type){
+            case "Holiday":
+                holidayArray = data.array;
+            break;
+            case "Meeting":
+                meetingArray = data.array;
+            break;
+            case "Milestone":
+                milestoneArray = data.array;
             break;
             default: 
                 console.log("Event not found.");
