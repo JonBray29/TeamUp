@@ -63,6 +63,7 @@ $(function(){
     //Global variables
     var socket;
     var calendar;
+    var uriPrefix = "https://teamuphub.herokuapp.com";
     //Declare arrays
     var holidayArray = [];
     var meetingArray = [];
@@ -113,7 +114,7 @@ $(function(){
         }
 
         if(!validation){
-            $.post("http://localhost:9000/login", { email: $("#login-email").val(), password: $("#login-password").val() }, function(res){
+            $.post(uriPrefix + "/login", { email: $("#login-email").val(), password: $("#login-password").val() }, function(res){
                 if(res.status == 200){
                     if($("#login-remember-me").prop("checked")){
                         localStorage.setItem("email", $("#login-email").val());
@@ -212,7 +213,7 @@ $(function(){
         if(!validation){
             if($("#signup-team-check").prop("checked")){
                 //new team
-                $.post("http://localhost:9000/createTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val()}, function(res){
+                $.post(uriPrefix + "/createTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val()}, function(res){
                     
                     switch(res.status){
                         case 200: 
@@ -229,7 +230,7 @@ $(function(){
             else{
                 let notification = new Notification("Request", "Request", moment().format(), $("#signup-email").val());
                 //join team
-                $.post("http://localhost:9000/joinTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val(), notification: notification }, function(res){
+                $.post(uriPrefix + "/joinTeam", { teamName: $("#signup-team").val(), email: $("#signup-email").val(), pass: $("#signup-password").val(), notification: notification }, function(res){
                     
                     switch(res.status){
                         case 200: 
@@ -690,7 +691,7 @@ $(function(){
         }
     });
     async function getNewId(callback){
-        await $.post("http://localhost:9000/id", function(res){
+        await $.post(uriPrefix + "/id", function(res){
             callback(res);
         });
     }
@@ -708,7 +709,7 @@ $(function(){
     });
     //Socket.io code
     function openSocket(res){
-        socket = io("http://localhost:9000");
+        socket = io(uriPrefix);
 
         socket.on ("connect", function(){
             socket.emit('join', { teamId: res.teamId, email: $("#login-email").val() });
