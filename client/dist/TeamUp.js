@@ -63,7 +63,7 @@ $(function(){
     //Global variables
     var socket;
     var calendar;
-    var uriPrefix = "https://teamuphub.herokuapp.com";
+    var uriPrefix = "https://teamuphub.herokuapp.com" || "https://localhost:9000";
     var timer = new easytimer.Timer();
     const startDate = flatpickr("#event-start", {
         enableTime: true,
@@ -257,7 +257,7 @@ $(function(){
 
         if(!validator.isEmail(data.email)){
             if($("label[for=login-email] span").length == 0){
-                $("label[for=login-email]").append("<span class='validation'> Ensure you have entered a valid email.</span>");
+                $("label[for=login-email]").append("<span id='hi' class='validation'> Ensure you have entered a valid email.</span>");
             }
             isValidated = false;
         }
@@ -641,7 +641,7 @@ $(function(){
         let allDay;
 
         let eventData = { name: $("#event-name").val() };
-        let isValidated = eventValidation("event", eventData);
+        let isValidated = validation("event", eventData);
         
         if($("#event-type").val() != ""){
             type = $("#event-type").val();
@@ -727,7 +727,7 @@ $(function(){
         $("#new-task").addClass("new-task-entered");
     }); 
      //If enter key is pressed when entering a new task
-     $("#new-task").on('keypress', function(e){
+    $("#new-task").on('keypress', function(e){
         if(e.which == 13){
             e.preventDefault();
             if(!validator.isEmpty($("#new-task").text())){
