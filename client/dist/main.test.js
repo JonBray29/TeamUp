@@ -6,12 +6,16 @@ var page;
 beforeAll(async () => {
     browser = await puppeteer.launch();
 });
-
+afterAll(async () => {
+    await browser.close();
+});
 beforeEach(async () => {
     page = await browser.newPage();
     await page.goto("https://elastic-mestorf-b1c185.netlify.app");
 });
-
+afterEach(async () => {
+    await page.close();
+});
 
 describe("Page elements load", () => {
     test("Login dialog loads", async () => {
