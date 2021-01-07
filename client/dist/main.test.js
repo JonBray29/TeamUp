@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 
-var browser = await puppeteer.launch();;
+var browser;
 var page;
 
 beforeAll(async () => {
