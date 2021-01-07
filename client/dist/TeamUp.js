@@ -791,7 +791,7 @@ $(function(){
             timer.stop();
             $("#play").toggleClass('hide');
             $("#pause").toggleClass('hide');
-            $("#stop").removeClass('hide');
+            $("#stop").addClass('hide');
             start = moment().subtract(time, "s").format();
             end = moment().format();
             title = $("#time-task").val();
