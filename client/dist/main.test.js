@@ -11,7 +11,7 @@ afterAll(async () => {
 });
 beforeEach(async () => {
     page = await browser.newPage();
-    await page.goto("https://elastic-mestorf-b1c185.netlify.app");
+    await page.goto("http://127.0.0.1:8080");
 });
 afterEach(async () => {
     await page.close();
