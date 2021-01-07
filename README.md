@@ -1,4 +1,4 @@
-[![buddy branch](https://app.buddy.works/jonbray29/teamup-1/repository/branch/main/badge.svg?token=1cad67babd10eaac282cbc4bfed53eb588d240dd1e96fd29059a2d5d7be6e932 "buddy branch")](https://app.buddy.works/jonbray29/teamup-1/repository/branch/main) ![Netlify](https://img.shields.io/netlify/d8416d17-a527-45e1-a566-b909b31fe89b)
+[![buddy branch](https://app.buddy.works/jonbray29/teamup-1/repository/branch/main/badge.svg?token=1cad67babd10eaac282cbc4bfed53eb588d240dd1e96fd29059a2d5d7be6e932 "buddy branch")](https://app.buddy.works/jonbray29/teamup-1/repository/branch/main)
 
 ![npm](https://img.shields.io/npm/v/npm) ![GitHub top language](https://img.shields.io/github/languages/top/JonBray29/TeamUp)  ![Lines of code](https://img.shields.io/tokei/lines/github/Jonbray29/TeamUp)
 
