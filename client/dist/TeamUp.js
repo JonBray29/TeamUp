@@ -798,6 +798,9 @@ $(function(){
             getNewId(function(id){
                 let event = new EventsFactory("Time", id, title, start, end, false);
                 newEvent(event);
+                socket.emit("Send Event", event);
+                let notification = new Notification("Event", event.title, moment().format());
+                sendNotification(notification);
             });
 
             $("#time-task").val('');
