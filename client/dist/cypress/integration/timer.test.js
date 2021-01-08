@@ -44,21 +44,4 @@ describe("Check that the timer functionality works", () => {
         cy.wait(100);
         cy.contains("Please enter a time tracking task name.").should("exist");
     });
-    it("On click stop button with task entered expect stop to hide", () => {
-        cy.get("#play").click({force: true});
-        cy.wait(100);
-        cy.get("#time-task").type("This is a test task", {force: true});
-        cy.wait(100)
-        cy.get("#stop").click({force: true}).wait(100).should("not.be.visible");
-    });
-    it("On click stop button with task entered expect play to be visible", () => {
-        cy.get("#play").click({force: true});
-        cy.wait(100);
-        cy.get("#time-task").type("This is a test task", {force: true});
-        cy.wait(100);
-        cy.get("#stop").click({force: true});
-        cy.wait(100);
-        cy.get("#play").should("be.visible");
-    });
-    
 });
