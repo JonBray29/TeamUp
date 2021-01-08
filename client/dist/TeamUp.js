@@ -358,7 +358,6 @@ $(function(){
                 $("label[for=event-end]").append("<span class='validation'> Ensure you have selected an end date.</span>");
             }
         }
-
         return isValidated;
     }
     function resValidation(res){ 

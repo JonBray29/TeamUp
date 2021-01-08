@@ -1,10 +1,12 @@
 describe("Tests that the login and signup dialog functions properly", () => {
-    beforeEach(() => {
+    before(() => {
         cy.visit("/");
     });
     describe("Check login validation", () => {
-        it("Email validation should be shown when no email is input", () => {
+        before(() => {
             cy.get(".submit-login").click();
+        })
+        it("Email validation should be shown when no email is input", () => {
             cy.contains("Ensure you have entered a valid email.").should("exist");
         });
         it("Email validation should be shown when invalid email is input", () => {
@@ -23,15 +25,16 @@ describe("Tests that the login and signup dialog functions properly", () => {
             cy.get("#login-modal section").last().should("be.visible");
         })
         it("Check remember me checkbox is checked on click", () => {
-            cy.get("#login-remember-me").click().should("be.checked");
+            cy.get("#login-remember-me").click({force: true}).should("be.checked");
         })
     })
     describe("Check signup validation", () => {
-        beforeEach(() => {
+        before(() => {
+            cy.wait(100);
             cy.contains("Sign Up").click();
+            cy.get(".submit-signup").click();
         });
         it("Email validation should be shown when no email is input", () => {
-            cy.get(".submit-signup").click();
             cy.contains("Ensure you have entered a valid email.").should("exist");
         });
         it("Email validation should be shown when invalid email is input", () => {
@@ -53,12 +56,12 @@ describe("Tests that the login and signup dialog functions properly", () => {
             cy.contains("Ensure your password is at least 8 characters in length, contains 1 upper and 1 lowercase letter, and 1 Number.").should("exist");
         });
         it("Password validation should be shown when no uppercase letter in password", () => {
-            cy.get("#signup-password").type("password1");
+            cy.get("#signup-password").clear().type("password1");
             cy.get(".submit-signup").click();
             cy.contains("Ensure your password is at least 8 characters in length, contains 1 upper and 1 lowercase letter, and 1 Number.").should("exist");
         });
         it("Password validation should be shown when no lowercase letter in password", () => {
-            cy.get("#signup-password").type("PASSWORD1");
+            cy.get("#signup-password").clear().type("PASSWORD1");
             cy.get(".submit-signup").click();
             cy.contains("Ensure your password is at least 8 characters in length, contains 1 upper and 1 lowercase letter, and 1 Number.").should("exist");
         });
