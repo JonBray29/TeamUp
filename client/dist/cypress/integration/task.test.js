@@ -4,7 +4,7 @@ describe("Checks that adding and removing tasks works", () => {
         cy.wait(1000);
         cy.get("#login-email").type("test@test.com");
         cy.get("#login-password").type("Password1");
-        cy.get(".submit-login").click();
+        cy.get(".submit-login").click().wait(100);
     });
     it("On enter when new task input should add task to list", () => {
         cy.get("#new-task").type("This is a new task {enter}");
