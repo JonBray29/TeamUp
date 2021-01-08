@@ -82,7 +82,6 @@ credentialSchema.pre('save', function(next){
     if(!user.isModified('password')){
         return next(); //check if save is a new user or modifying existing user
     }
-
     bcrypt.genSalt(saltRounds, function(err, salt){
         if(err){
             next(err);
@@ -101,184 +100,18 @@ credentialSchema.pre('save', function(next){
     });
 });
 const credentialModel = mongoose.model("Credentials", credentialSchema);
-
-//Create team
-app.post("/createTeam", async function(req, res){
-    let teamName = req.body.teamName;
-    let email = req.body.email;
-    let pass = req.body.pass;
-  
-    if(await credentialModel.countDocuments({ email: email }) != 0){
-        return res.json({ status: 400, message: "email" });
-    }
-    else if(await teamModel.countDocuments({ name: teamName }) != 0){
-        return res.json({ status: 400, message: "teamNameExists" });
-    }
-    else{
-        let team = new teamModel({ name: teamName, users: [{email: email, type: "Admin", accepted: true}]});
-
-        team.save();
-        createCredentials(email, pass, team._id);
-        return res.json( { status: 200 } );
-    }
-});
-//Join team
-app.post("/joinTeam", async function(req, res){
-    let teamName = req.body.teamName;
-    let email = req.body.email;
-    let pass = req.body.pass;
-    let notification = req.body.notification;
-
-    if(await credentialModel.countDocuments({ email: email }) != 0){
-        return res.json({ status: 400, message: "email" });
-    }
-    else if(await teamModel.countDocuments({ name: teamName }) == 0){
-        return res.json({ status: 400, message: "teamNameNonExistent" });
-    }
-    else{
-        let newUser = { email: email, type: "Standard", accepted: false };
-        await teamModel.updateOne(
-            { name: teamName },
-            { $push: { users: newUser }}
-        )
-        let team = await teamModel.findOne({ name: teamName });
-        createCredentials(email, pass, team._id);
-        let admin = team.users.find(user => user.type == "Admin");
-        admin.notifications.push(notification);
-        let tempNotification = admin.notifications.find(notification => notification == notification);
-        if(socketMap.has(admin.email)){
-            io.sockets.to(socketMap.get(admin.email)).emit("Notification", tempNotification);
-        }
-        
-        team.save();
-        return res.json({ status: 200 });
-    }
-});
-//Create credentials for users
+//Database insert functions
+function createTeam(teamName, email, pass){
+    let team = new teamModel({ name: teamName, users: [{email: email, type: "Admin", accepted: true}]});
+    team.save();
+    createCredentials(email, pass, team._id);
+}
 function createCredentials(email, pass, team){
     let credential = new credentialModel({ email: email, password: pass, teamId: team });
     credential.save();
 }
-
-//Login
-app.post("/login", async function(req, res){
-    let email = req.body.email;
-    let password = req.body.password;
-
-    let user = await credentialModel.findOne({ email: email });
-    if(!user){
-        return res.json({ status: 400, message: "incorrectEmail"});
-    }
-    if(!bcrypt.compareSync(password, user.password)){
-        return res.json({ status: 400, message: "incorrectPassword" });
-    }
-    else{
-        let team = await teamModel.findOne({ _id: user.teamId });
-        let teamUser = team.users.find(user => user.email == email);
-
-        if(teamUser.accepted){
-            return res.json({
-                status: 200, 
-                teamId: team._id,
-                tasks: team.tasks,
-                meetings: team.meetings,
-                holidays: team.holidays,
-                milestones: team.milestones,
-                times: team.times,
-                notifications: teamUser.notifications
-            });
-        }
-        else{
-            return res.json({ status: 400, message: "notAccepted"});
-        }
-    }
-});
-//Mongoose object id
-app.post("/id", function(req, res){
-    return res.send(mongoose.Types.ObjectId());
-});
-
-class SocketData {
-    constructor(id, email){
-        this.teamId = id;
-        this.email = email;
-    }
-}
-
-io.on('connection', function(socket){
-    let socketData;
-    socket.on('join', async function(data){
-        socket.join(data.teamId);
-        socketMap.set(data.email, socket.id);
-        socketData = new SocketData(data.teamId, data.email);
-    }); 
-    socket.on('disconnect', function(reason){
-        socketMap.delete(socketData.email);
-    });
-    socket.on('New Task', async function(task){
-        let newTask = { _id: mongoose.Types.ObjectId(), task: task};
-        await teamModel.updateOne(
-            { _id: socketData.teamId },
-            { $push: { tasks: newTask}}
-        );
-        io.in(socketData.teamId).emit('Send Task', newTask);
-    });
-    socket.on('New Notification', async function(notification) {
-        notification.userEmail = socketData.email;
-        notification._id = mongoose.Types.ObjectId();
-
-        let team = await teamModel.findOne({ _id: socketData.teamId });
-        team.users.forEach(function(user){
-            if(user.email != notification.userEmail){
-                user.notifications.push(notification);
-                team.save();
-
-                if(socketMap.has(user.email)){
-                    io.to(socketMap.get(user.email)).emit("Notification", notification);
-                }
-            }
-        })
-    })
-    socket.on('Accept User', async function(id){
-        //Accept user
-        let team = await teamModel.findOne({ _id: socketData.teamId });
-        let user = team.users.find(user => user.email == socketData.email);
-        let notification = user.notifications.find(notification => notification._id == id);
-        let tempUser = team.users.find(user => user.email == notification.userEmail);
-        tempUser.accepted = true;
-        user.notifications = user.notifications.filter(notification => notification._id != id);
-        team.save();
-    });
-    socket.on('Reject User', async function(id){
-        //Reject user, delete user from array
-        let team = await teamModel.findOne({ _id: socketData.teamId });
-        let user = team.users.find(user => user.email == socketData.email);
-        let notification = user.notifications.find(notification => notification._id == id);
-        team.users = team.users.filter(user => user.email != notification.userEmail);
-        user.notifications = user.notifications.filter(notification => notification._id != id);
-        team.save();
-
-        await credentialModel.deleteOne({ email: notification.userEmail });
-    });
-    socket.on('Remove', async function(data){
-        if(data.type == "Notification"){
-            let team = await teamModel.findOne({ _id: socketData.teamId });
-            let user = team.users.find(user => user.email == socketData.email);
-            user.notifications = user.notifications.filter(notification => notification._id != data.id);
-            team.save();
-        }
-        else if(data.type == "Task"){
-            //Remove task by id
-            let team = await teamModel.findOne({ _id: socketData.teamId });
-            team.tasks = team.tasks.filter(task => task._id != data.id);
-            team.save();
-
-            socket.to(socketData.teamId).emit('Remove Task', data.id);
-        }
-    });
-    socket.on('Send Event', async function(event){
-        //Add new event to mongodb 
-        let team = await teamModel.findOne({ _id: socketData.teamId });
+function createNewEvent(teamId, event){
+    let team = await teamModel.findOne({ _id: teamId });
         switch(event.type){
             case "Holiday":
                 team.holidays.push(event);
@@ -296,86 +129,288 @@ io.on('connection', function(socket){
                 console.log("Event not found.");
         }
         team.save();
+}
+async function createNewTask(task, teamId){
+    let newTask = { _id: mongoose.Types.ObjectId(), task: task};
+    await teamModel.updateOne(
+        { _id: teamId },
+        { $push: { tasks: newTask}}
+    );
+    return newTask;
+}
+async function createNewNotification(){
+    notification.userEmail = email;
+    notification._id = mongoose.Types.ObjectId();
+
+    let team = await teamModel.findOne({ _id: teamId });
+    team.users.forEach(function(user){
+        if(user.email != notification.userEmail){
+            user.notifications.push(notification);
+            team.save();
+
+            sendNotification(user.email, notification);
+        }
+    });
+}
+
+//Database read functions
+async function findUserInCredentials(email){
+    return user = await credentialModel.findOne({ email: email });
+}
+async function findTeam(teamId){
+    return await teamModel.findOne({ _id: teamId });
+}
+async function createNewUser(teamName, email, pass, notification){
+    let team = await teamModel.findOne({ name: teamName });
+    let newUser = { email: email, type: "Standard", accepted: false };
+    let admin = team.users.find(user => user.type == "Admin");
+
+    await teamModel.updateOne(
+        { name: teamName },
+        { $push: { users: newUser }}
+    )
+    admin.notifications.push(notification);
+    let tempNotification = admin.notifications.find(notification => notification == notification);
+    team.save();
+
+    sendNotification(admin.email, tempNotification);
+    createCredentials(email, pass, team._id);
+}
+
+//Database update functions
+async function acceptUser(teamId, email, id){
+    let team = findTeam(teamId);
+    let user = team.users.find(user => user.email == email);
+    let notification = user.notifications.find(notification => notification._id == id);
+    let tempUser = team.users.find(user => user.email == notification.userEmail);
+    tempUser.accepted = true;
+    user.notifications = user.notifications.filter(notification => notification._id != id);
+    team.save();
+}
+async function updateEvent(teamId, event){
+    let team = findTeam(teamId);
+    switch(event.type){
+        case "Holiday":
+            team.holidays.forEach(function(e){
+                if(e._id == event.id){
+                    e.title = event.title;
+                    e.start = event.start;
+                    e.end = event.end;
+                }
+            });
+            team.save();
+            return team.holidays;
+        case "Meeting":
+            team.meetings.forEach(function(e){
+                if(e._id == event.id){
+                    e.title = event.title;
+                    e.start = event.start;
+                    e.end = event.end;
+                }
+            });
+            team.save();
+            return team.meetings;
+        case "Milestone":
+            team.milestones.forEach(function(e){
+                if(e._id == event.id){
+                    e.title = event.title;
+                    e.start = event.start;
+                    e.end = event.end;
+                }
+            });
+            team.save();
+            return team.milestones;
+        default: 
+            console.log("Event not found.");
+            return [];
+    }
+}
+
+//Database delete functions
+async function deleteUser(teamId, email, id){
+    let team = findTeam(teamId);
+    let user = team.users.find(user => user.email == email);
+    let notification = user.notifications.find(notification => notification._id == id);
+    team.users = team.users.filter(user => user.email != notification.userEmail);
+    user.notifications = user.notifications.filter(notification => notification._id != id);
+    team.save();
+
+    deleteUserCredentials(notification.userEmail);
+}
+async function deleteUserCredentials(userEmail){
+    await credentialModel.deleteOne({ email: userEmail });
+}
+async function deleteNotification(teamId, email, id){
+    let team = findTeam(teamId);
+    let user = team.users.find(user => user.email == email);
+    user.notifications = user.notifications.filter(notification => notification._id != id);
+    team.save();
+}
+async function deleteTask(teamId, id){
+    let team = findTeam(teamId);
+    team.tasks = team.tasks.filter(task => task._id != id);
+    team.save();
+}
+async function deleteEvent(teamId, event){
+    let team = findTeam(teamId);
+    switch(event.type){
+        case "Holiday":
+            team.holidays = team.holidays.filter(e => e._id != event.id);
+            team.save();
+            return team.holidays;
+        case "Meeting":
+            team.meetings = team.meetings.filter(e => e._id != event.id);
+            team.save()
+            return team.meetings;
+        case "Milestone":
+            team.milestones = team.milestones.filter(e => e._id != event.id);
+            team.save()
+            return team.milestones;
+        case "Time":
+            team.times = team.times.filter(e => e._id != event.id);
+            team.save()
+            return team.times;
+        default: 
+            console.log("Event not found.");
+            return [];
+    }
+}
+
+//Create team post request
+app.post("/createTeam", async function(req, res){
+    let teamName = req.body.teamName;
+    let email = req.body.email;
+    let pass = req.body.pass;
+  
+    if(await credentialModel.countDocuments({ email: email }) != 0){
+        return res.json({ status: 400, message: "email" });
+    }
+    else if(await teamModel.countDocuments({ name: teamName }) != 0){
+        return res.json({ status: 400, message: "teamNameExists" });
+    }
+    else{
+        createTeam(teamName, email, pass);
+        return res.json( { status: 200 } );
+    }
+});
+//Join team post request
+app.post("/joinTeam", async function(req, res){
+    let teamName = req.body.teamName;
+    let email = req.body.email;
+    let pass = req.body.pass;
+    let notification = req.body.notification;
+
+    if(await credentialModel.countDocuments({ email: email }) != 0){
+        return res.json({ status: 400, message: "email" });
+    }
+    else if(await teamModel.countDocuments({ name: teamName }) == 0){
+        return res.json({ status: 400, message: "teamNameNonExistent" });
+    }
+    else{
+        createNewUser(teamName, email, pass, notification);
+        return res.json({ status: 200 });
+    }
+});
+//Login post request
+app.post("/login", async function(req, res){
+    let email = req.body.email;
+    let password = req.body.password;
+
+    let teamUser = findUserInCredentials(email);
+    if(!user){
+        return res.json({ status: 400, message: "incorrectEmail"});
+    }
+    if(!bcrypt.compareSync(password, user.password)){
+        return res.json({ status: 400, message: "incorrectPassword" });
+    }
+    else{
+        let team = findTeam(teamUser.teamId);
+        let user = team.users.find(user => user.email == email);
+
+        if(user.accepted){
+            return res.json({
+                status: 200, 
+                teamId: team._id,
+                tasks: team.tasks,
+                meetings: team.meetings,
+                holidays: team.holidays,
+                milestones: team.milestones,
+                times: team.times,
+                notifications: user.notifications
+            });
+        }
+        else{
+            return res.json({ status: 400, message: "notAccepted"});
+        }
+    }
+});
+//Mongoose new object id post request
+app.post("/id", function(req, res){
+    return res.send(mongoose.Types.ObjectId());
+});
+//Class to hold the data for the socket
+class SocketData {
+    constructor(id, email){
+        this.teamId = id;
+        this.email = email;
+    }
+}
+//Socket functions
+io.on('connection', function(socket){
+    let socketData;
+    socket.on('join', function(data){
+        socket.join(data.teamId);
+        socketMap.set(data.email, socket.id);
+        socketData = new SocketData(data.teamId, data.email);
+    }); 
+    socket.on('disconnect', function(reason){
+        socketMap.delete(socketData.email);
+    });
+    socket.on('New Task', function(task){
+        let newTask = createNewTask(task, socketData.teamId);
+
+        io.in(socketData.teamId).emit('Send Task', newTask);
+    });
+    socket.on('New Notification', function(notification) {
+        createNewNotification(notification, socketData.teamId, socketData.email);
+    })
+    socket.on('Accept User', function(id){
+        acceptUser(socketData.teamId, socketData.email, id);
+    });
+    socket.on('Reject User', function(id){
+        deleteUser(socketData.teamId, socketData.email, id);
+    });
+    socket.on('Remove', function(data){
+        if(data.type == "Notification"){
+            deleteNotification(socketData.teamId, socketData.email, data.id);
+        }
+        else if(data.type == "Task"){
+            deleteTask(socketData.teamId, data.id);
+
+            socket.to(socketData.teamId).emit('Remove Task', data.id);
+        }
+    });
+    socket.on('Send Event', function(event){
+        createNewEvent(socketData.teamId, event);
 
         socket.to(socketData.teamId).emit('New Event', event);
     });
-    socket.on('Update Event', async function(event){
-        let team = await teamModel.findOne({ _id: socketData.teamId });
-        let type = event.type;
-        let array;
-        switch(type){
-            case "Holiday":
-                team.holidays.forEach(function(e){
-                    if(e._id == event.id){
-                        e.title = event.title;
-                        e.start = event.start;
-                        e.end = event.end;
-                    }
-                });
+    socket.on('Update Event', function(event){
+        let array = updateEvent(socketData.teamId, event);
 
-                array = team.holidays;
-            break;
-            case "Meeting":
-                team.meetings.forEach(function(e){
-                    if(e._id == event.id){
-                        e.title = event.title;
-                        e.start = event.start;
-                        e.end = event.end;
-                    }
-                });
-
-                array = team.meetings;
-                break;
-            case "Milestone":
-                team.milestones.forEach(function(e){
-                    if(e._id == event.id){
-                        e.title = event.title;
-                        e.start = event.start;
-                        e.end = event.end;
-                    }
-                });
-
-                array = team.milestones;
-                break;
-            default: 
-                console.log("Event not found.");
-        }
-        team.save();
-
-        io.in(socketData.teamId).emit('Updated Event', { type: type, array: array });
+        io.in(socketData.teamId).emit('Updated Event', { type: event.type, array: array });
     });
-    socket.on('Delete Event', async function(event){
-        let team = await teamModel.findOne({ _id: socketData.teamId });
-        let type = event.type;
-        let array;
-        switch(type){
-            case "Holiday":
-                team.holidays = team.holidays.filter(e => e._id != event.id);
+    socket.on('Delete Event', function(event){
+        let array = deleteEvent(socketData.teamId, event);
 
-                array = team.holidays;
-            break;
-            case "Meeting":
-                team.meetings = team.meetings.filter(e => e._id != event.id);
-
-                array = team.meetings;
-                break;
-            case "Milestone":
-                team.milestones = team.milestones.filter(e => e._id != event.id);
-
-                array = team.milestones;
-                break;
-            case "Time":
-                team.times = team.times.filter(e => e._id != event.id);
-
-                array = team.times;
-                break;
-            default: 
-                console.log("Event not found.");
-        }
-        team.save();
-
-        io.in(socketData.teamId).emit('Deleted Event', { type: type, array: array });
+        io.in(socketData.teamId).emit('Deleted Event', { type: event.type, array: array });
     });
 });
+
+function sendNotification(email, notification){
+    if(socketMap.has(email)){
+        io.sockets.to(socketMap.get(email)).emit("Notification", notification);
+    }
+}
 
 server.listen(process.env.PORT || port);
