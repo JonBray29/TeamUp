@@ -469,7 +469,7 @@ $(function(){
         let reject = "<button class='hvr-grow reject'>Reject</button>";
         let id = notification._id;
         if(notification.type == "Event"){
-            let title = "<h1>" + "New event: " + notification.message + "</h1>";
+            let title = "<h1>" + "New event: " + "'" + notification.message + "'" + " added by - " + notification.userEmail + "</h1>";
             $("#notifications-dialog").find("section").prepend("<div id='" + id + "'>" + title + time + dismiss + "</div>");
         }
         else if(notification.type == "Task"){
@@ -686,7 +686,7 @@ $(function(){
         let type;
 
         let eventData = { name: $("#event-name").val() };
-        let isValidated = eventValidation("event", eventData);
+        let isValidated = validation("event", eventData);
 
         if(isValidated){
             id = $("#event-id").html();
