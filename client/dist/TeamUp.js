@@ -65,26 +65,6 @@ $(function(){
     var calendar;
     var uriPrefix = "https://teamuphub.herokuapp.com" || "https://localhost:9000";
     var timer = new easytimer.Timer();
-    const startDate = flatpickr("#event-start", {
-        enableTime: true,
-        time_24hr: true,
-        altInput: true,
-        altFormat: "H:i - l J F Y",
-        dateFormat: "Z",
-        minDate: "today",
-        onChange: function(selected, dateString, instance){
-            endDate.config.minDate = dateString;
-            endDate.setDate(moment(dateString).add(1, "h").format());
-        }
-    });
-    const endDate = flatpickr("#event-end", {
-        enableTime: true,
-        time_24hr: true,
-        altInput: true,
-        altFormat: "H:i - l J F Y",
-        dateFormat: "Z",
-        minDate: "today"
-    });
     const observer = new MutationObserver(function(){
         $("#notifications-dialog").trigger("mutated");
     });
@@ -230,6 +210,26 @@ $(function(){
         });
         calendar.render();
     }
+    const startDate = flatpickr("#event-start", {
+        enableTime: true,
+        time_24hr: true,
+        altInput: true,
+        altFormat: "H:i - l J F Y",
+        dateFormat: "Z",
+        minDate: "today",
+        onChange: function(selected, dateString, instance){
+            endDate.config.minDate = dateString;
+            endDate.setDate(moment(dateString).add(1, "h").format());
+        }
+    });
+    const endDate = flatpickr("#event-end", {
+        enableTime: true,
+        time_24hr: true,
+        altInput: true,
+        altFormat: "H:i - l J F Y",
+        dateFormat: "Z",
+        minDate: "today"
+    });
     //Get and set email to localstorage
     function getEmail(){
         if(localStorage.email != undefined){
