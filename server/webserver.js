@@ -23,9 +23,9 @@ app.use(cors());
 mongoose.connect(dbUrl, { useUnifiedTopology: true, useNewUrlParser: true });
 
 //Database insert functions
-function createTeam(teamName, email){
+async function createTeam(teamName, email){
     let team = new teamModel({ name: teamName, users: [{email: email, type: "Admin", accepted: true}]});
-    team.save();
+    await team.save();
     return team._id;
 }
 async function createNewUser(teamName, email, notification){
@@ -39,17 +39,17 @@ async function createNewUser(teamName, email, notification){
     )
     admin.notifications.push(notification);
     let tempNotification = admin.notifications.find(notification => notification == notification);
-    team.save();
+    await team.save();
 
     return { notification: tempNotification, teamId: team._id };
 
 
 }
-function createCredentials(email, pass, team){
+async function createCredentials(email, pass, team){
     let credential = new credentialModel({ email: email, password: pass, teamId: team });
-    credential.save();
+    await credential.save();
 }
-function createNewEvent(teamId, event){
+async function createNewEvent(teamId, event){
     let team = await teamModel.findOne({ _id: teamId });
         switch(event.type){
             case "Holiday":
@@ -67,7 +67,7 @@ function createNewEvent(teamId, event){
             default: 
                 console.log("Event not found.");
         }
-        team.save();
+        await team.save();
 }
 async function createNewTask(task, teamId){
     let newTask = { _id: mongoose.Types.ObjectId(), task: task};
@@ -77,23 +77,22 @@ async function createNewTask(task, teamId){
     );
     return newTask;
 }
-async function createNewNotification(){
+async function createNewNotification(notification, teamId, email){
     notification.userEmail = email;
     notification._id = mongoose.Types.ObjectId();
 
     let team = await teamModel.findOne({ _id: teamId });
-    team.users.forEach(function(user){
+    team.users.forEach(async function(user){
         if(user.email != notification.userEmail){
             user.notifications.push(notification);
-            team.save();
-
+            await team.save();
             sendNotification(user.email, notification);
         }
     });
 }
 //Database read functions
 async function findUserInCredentials(email){
-    return user = await credentialModel.findOne({ email: email });
+    return await credentialModel.findOne({ email: email });
 }
 async function findTeam(teamId){
     return await teamModel.findOne({ _id: teamId });
@@ -106,7 +105,7 @@ async function acceptUser(teamId, email, id){
     let tempUser = team.users.find(user => user.email == notification.userEmail);
     tempUser.accepted = true;
     user.notifications = user.notifications.filter(notification => notification._id != id);
-    team.save();
+    await team.save();
 }
 async function updateEvent(teamId, event){
     let team = findTeam(teamId);
@@ -119,7 +118,7 @@ async function updateEvent(teamId, event){
                     e.end = event.end;
                 }
             });
-            team.save();
+            await team.save();
             return team.holidays;
         case "Meeting":
             team.meetings.forEach(function(e){
@@ -129,7 +128,7 @@ async function updateEvent(teamId, event){
                     e.end = event.end;
                 }
             });
-            team.save();
+            await team.save();
             return team.meetings;
         case "Milestone":
             team.milestones.forEach(function(e){
@@ -139,7 +138,7 @@ async function updateEvent(teamId, event){
                     e.end = event.end;
                 }
             });
-            team.save();
+            await team.save();
             return team.milestones;
         default: 
             console.log("Event not found.");
@@ -153,7 +152,7 @@ async function deleteUser(teamId, email, id){
     let notification = user.notifications.find(notification => notification._id == id);
     team.users = team.users.filter(user => user.email != notification.userEmail);
     user.notifications = user.notifications.filter(notification => notification._id != id);
-    team.save();
+    await team.save();
 
     deleteUserCredentials(notification.userEmail);
 }
@@ -164,37 +163,51 @@ async function deleteNotification(teamId, email, id){
     let team = findTeam(teamId);
     let user = team.users.find(user => user.email == email);
     user.notifications = user.notifications.filter(notification => notification._id != id);
-    team.save();
+    await team.save();
 }
 async function deleteTask(teamId, id){
     let team = findTeam(teamId);
     team.tasks = team.tasks.filter(task => task._id != id);
-    team.save();
+    await team.save();
 }
 async function deleteEvent(teamId, event){
     let team = findTeam(teamId);
     switch(event.type){
         case "Holiday":
             team.holidays = team.holidays.filter(e => e._id != event.id);
-            team.save();
+            await team.save();
             return team.holidays;
         case "Meeting":
             team.meetings = team.meetings.filter(e => e._id != event.id);
-            team.save()
+            await team.save()
             return team.meetings;
         case "Milestone":
             team.milestones = team.milestones.filter(e => e._id != event.id);
-            team.save()
+            await team.save()
             return team.milestones;
         case "Time":
             team.times = team.times.filter(e => e._id != event.id);
-            team.save()
+            await team.save()
             return team.times;
         default: 
             console.log("Event not found.");
             return [];
     }
 }
+module.exports.createTeam = createTeam;
+module.exports.createNewUser = createNewUser;
+module.exports.createCredentials = createCredentials;
+module.exports.createNewEvent = createNewEvent;
+module.exports.createNewTask = createNewTask;
+module.exports.createNewNotification = createNewNotification;
+module.exports.findUserInCredentials = findUserInCredentials;
+module.exports.findTeam = findTeam;
+module.exports.acceptUser = acceptUser;
+module.exports.updateEvent = updateEvent;
+module.exports.deleteUser = deleteUser;
+module.exports.deleteUserCredentials = deleteUserCredentials;
+module.exports.deleteTask = deleteTask;
+module.exports.deleteEvent = deleteEvent;
 
 //Create team post request
 app.post("/createTeam", async function(req, res){
