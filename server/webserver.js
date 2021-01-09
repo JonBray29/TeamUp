@@ -5,13 +5,13 @@ const bodyParser = require("body-parser");
 const socketio = require("socket.io");
 const http = require("http");
 const cors = require("cors");
-const { ObjectId } = require("bson");
-const saltRounds = 10;
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server, { cors: { origin: '*' } });
 const port = 9000;
 const dbUrl = "mongodb+srv://user:userPassword@teamup.lp8bc.mongodb.net/TeamUp?retryWrites=true&w=majority";
+const credentialModel = require("./model/Credentials");
+const teamModel = require("./model/Teams");
 
 var socketMap = new Map();
 
@@ -22,89 +22,28 @@ app.use(cors());
 //Connect to db
 mongoose.connect(dbUrl, { useUnifiedTopology: true, useNewUrlParser: true });
 
-//Schema definitions
-const teamsSchema = new mongoose.Schema({
-    name: { type: String, required: true, lowercase: true, unique: true },
-    users: [{
-        email: { type: String, required: true, lowercase: true, trim: true, unique: true },
-        type: { type: String, enum: ["Admin", "Standard"], required: true },
-        accepted: { type: Boolean, required: true },
-        notifications: [{
-            type: { type: String, enum: ["Request", "Event", "Task"], required: true},
-            message: { type: String, required: true, trim: true },
-            date: { type: Date, required: true },
-            userEmail: { type: String, required: false, trim: true }
-        }]
-    }],
-    tasks: [{
-        task: { type: String, required: true, trim: true }
-    }],
-    meetings: [{
-        title: { type: String, required: true, trim: true },
-        start: { type: Date, required: true, min: Date.now },
-        end: { type: Date, requried: true, min: Date.now },
-        allDay: { type: Boolean, default: false },
-        type: {type: String, required: true, default: "Meeting" }
-    }],
-    holidays: [{
-        title: { type: String, required: true, trim: true },
-        start: { type: Date, required: true, min: Date.now },
-        end: { type: Date, requried: true, min: Date.now },
-        allDay: { type: Boolean, default: true },
-        type: {type: String, required: true, default: "Holiday" }
-    }],
-    milestones: [{
-        title: { type: String, required: true, trim: true },
-        start: { type: Date, required: true, min: Date.now },
-        end: { type: Date, requried: true, min: Date.now },
-        allDay: { type: Boolean, default: true },
-        type: {type: String, required: true, default: "Milestone" }
-    }],
-    times: [{
-        title: { type: String, required: true, trim: true },
-        start: { type: Date, required: true },
-        end: { type: Date, requried: true},
-        allDay: { type: Boolean, default: false },
-        type: {type: String, required: true, default: "Time" }
-    }]
-});
-const teamModel = mongoose.model("Teams", teamsSchema);
-
-const credentialSchema = new mongoose.Schema({
-    email: { type: String, required: true, lowercase: true, trim: true, unique: true },
-    password: {type: String, required: true },
-    teamId: {type: ObjectId, required: true}
-});
-//Password salting
-credentialSchema.pre('save', function(next){
-    let user = this;
-
-    if(!user.isModified('password')){
-        return next(); //check if save is a new user or modifying existing user
-    }
-    bcrypt.genSalt(saltRounds, function(err, salt){
-        if(err){
-            next(err);
-        }
-        else{
-            bcrypt.hash(user.password, salt, function(err, hash){
-                if(err){
-                    next(err);
-                }
-                else{
-                    user.password = hash; //save users password as hashed password
-                    next();
-                }
-            });
-        }
-    });
-});
-const credentialModel = mongoose.model("Credentials", credentialSchema);
 //Database insert functions
-function createTeam(teamName, email, pass){
+function createTeam(teamName, email){
     let team = new teamModel({ name: teamName, users: [{email: email, type: "Admin", accepted: true}]});
     team.save();
-    createCredentials(email, pass, team._id);
+    return team._id;
+}
+async function createNewUser(teamName, email, notification){
+    let team = await teamModel.findOne({ name: teamName });
+    let newUser = { email: email, type: "Standard", accepted: false };
+    let admin = team.users.find(user => user.type == "Admin");
+
+    await teamModel.updateOne(
+        { name: teamName },
+        { $push: { users: newUser }}
+    )
+    admin.notifications.push(notification);
+    let tempNotification = admin.notifications.find(notification => notification == notification);
+    team.save();
+
+    return { notification: tempNotification, teamId: team._id };
+
+
 }
 function createCredentials(email, pass, team){
     let credential = new credentialModel({ email: email, password: pass, teamId: team });
@@ -152,7 +91,6 @@ async function createNewNotification(){
         }
     });
 }
-
 //Database read functions
 async function findUserInCredentials(email){
     return user = await credentialModel.findOne({ email: email });
@@ -160,23 +98,6 @@ async function findUserInCredentials(email){
 async function findTeam(teamId){
     return await teamModel.findOne({ _id: teamId });
 }
-async function createNewUser(teamName, email, pass, notification){
-    let team = await teamModel.findOne({ name: teamName });
-    let newUser = { email: email, type: "Standard", accepted: false };
-    let admin = team.users.find(user => user.type == "Admin");
-
-    await teamModel.updateOne(
-        { name: teamName },
-        { $push: { users: newUser }}
-    )
-    admin.notifications.push(notification);
-    let tempNotification = admin.notifications.find(notification => notification == notification);
-    team.save();
-
-    sendNotification(admin.email, tempNotification);
-    createCredentials(email, pass, team._id);
-}
-
 //Database update functions
 async function acceptUser(teamId, email, id){
     let team = findTeam(teamId);
@@ -225,7 +146,6 @@ async function updateEvent(teamId, event){
             return [];
     }
 }
-
 //Database delete functions
 async function deleteUser(teamId, email, id){
     let team = findTeam(teamId);
@@ -289,7 +209,8 @@ app.post("/createTeam", async function(req, res){
         return res.json({ status: 400, message: "teamNameExists" });
     }
     else{
-        createTeam(teamName, email, pass);
+        let teamId = await createTeam(teamName, email);
+        createCredentials(email, pass, teamId);
         return res.json( { status: 200 } );
     }
 });
@@ -307,7 +228,9 @@ app.post("/joinTeam", async function(req, res){
         return res.json({ status: 400, message: "teamNameNonExistent" });
     }
     else{
-        createNewUser(teamName, email, pass, notification);
+        let data = await createNewUser(teamName, email, notification);
+        sendNotification(admin.email, data.notification);
+        createCredentials(email, pass, data.teamId);
         return res.json({ status: 200 });
     }
 });
@@ -412,5 +335,7 @@ function sendNotification(email, notification){
         io.sockets.to(socketMap.get(email)).emit("Notification", notification);
     }
 }
+
+module.exports.app = app;
 
 server.listen(process.env.PORT || port);
