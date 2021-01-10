@@ -3,7 +3,7 @@ const credentialModel = require('../model/Credentials');
 const teamModel = require('../model/Teams');
 const controller = require('../controller');
 
-describe("Test the mongoDB creating functions",() => {
+describe("Mongoose create tests",() => {
     const dbUrl = "mongodb+srv://user:userPassword@teamup.lp8bc.mongodb.net/TestDb?retryWrites=true&w=majority";
 
     beforeAll(async () => {
@@ -12,7 +12,7 @@ describe("Test the mongoDB creating functions",() => {
     afterAll(async () => {
         await mongoose.connection.close()
     });
-
+    
     afterEach(async () => {
         await credentialModel.deleteMany();
         await teamModel.deleteMany();
@@ -26,8 +26,8 @@ describe("Test the mongoDB creating functions",() => {
     });
     test("Create New User", async () => {
         let team = new teamModel({ name: "Test", users: [{email: "test@test.com", type: "Admin", accepted: true}]});
-        await team.save();
         let notification = {type: "Request", message: "Request", date: "2021-01-09T22:15:46Z", userEmail: "Test1@test.com"};
+        await team.save();
         await controller.createNewUser("Test", "Test1@test.com", notification);
         let newTeam = await teamModel.findOne({ name: "Test" });
         expect(newTeam.users.length).toEqual(2);
@@ -64,10 +64,8 @@ describe("Test the mongoDB creating functions",() => {
         let team = new teamModel({ _id: "5a8d1cf5208ce33820f193bf", name: "Test", users: [{email: "test@test.com", type: "Admin", accepted: true}]});
         await team.save();
         let notification = {type: "Request", message: "Request", date: "2021-01-09T22:15:46Z"};
-        await controller.createNewNotification(notification, "5a8d1cf5208ce33820f193bf", "test1@test.com");
+        await controller.createNewNotification(notification, "5a8d1cf5208ce33820f193bf", "test@test.com");
         let newTeam = await teamModel.findOne({ name: "Test" });
-        setTimeout(() => {
-            expect(newTeam.users[0].notifications.length).toEqual(1);
-        }, 1000);
+        expect(newTeam.users[0].notifications.length).toEqual(1);
     });
 });

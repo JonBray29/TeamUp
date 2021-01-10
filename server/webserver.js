@@ -123,17 +123,23 @@ io.on('connection', function(socket){
         io.in(socketData.teamId).emit('Send Task', newTask);
     });
     socket.on('New Notification', function(notification) {
-        let data = controller.createNewNotification(notification, socketData.teamId, socketData.email);
+        notification.userEmail = socketData.email;
+        notification._id = mongoose.Types.ObjectId();
 
-        data.forEach(function(d){
-            sendNotification(d.email, d.notification);
+        let team = await controller.findTeam(socketData.teamId);
+        team.users.forEach(function(user) {
+            if(user.email != socketData.email) {
+                await controller.createNewNotification(notification, socketData.teamId, user.email);
+                sendNotification(user.email, notificaiton);
+            }
         });
     })
     socket.on('Accept User', function(id){
         controller.acceptUser(socketData.teamId, socketData.email, id);
     });
     socket.on('Reject User', function(id){
-        controller.deleteUser(socketData.teamId, socketData.email, id);
+        let email = await controller.deleteUser(socketData.teamId, socketData.email, id);
+        controller.deleteUserCredentials(email);
     });
     socket.on('Remove', function(data){
         if(data.type == "Notification"){
@@ -151,13 +157,15 @@ io.on('connection', function(socket){
         socket.to(socketData.teamId).emit('New Event', event);
     });
     socket.on('Update Event', function(event){
-        let array = controller.updateEvent(socketData.teamId, event);
-
+        await controller.updateEvent(socketData.teamId, event);
+        
+        let array = getEventArray(event.type, socketData.teamId);
         io.in(socketData.teamId).emit('Updated Event', { type: event.type, array: array });
     });
     socket.on('Delete Event', function(event){
-        let array = controller.deleteEvent(socketData.teamId, event);
+        await controller.deleteEvent(socketData.teamId, event.id, event.type);
 
+        let array = getEventArray(event.type, socketData.teamId);
         io.in(socketData.teamId).emit('Deleted Event', { type: event.type, array: array });
     });
 });
@@ -165,6 +173,24 @@ io.on('connection', function(socket){
 function sendNotification(email, notification){
     if(socketMap.has(email)){
         io.sockets.to(socketMap.get(email)).emit("Notification", notification);
+    }
+}
+
+function getEventArray(type, teamId){
+    let team = await findTeam(teamId);
+
+    switch(type){
+        case "Holiday":
+            return team.holdays;
+        case "Meeting":
+            return team.meetings;
+        case "Milestone":
+            return team.milestones;
+        case "Time":
+            return team.times;
+        default: 
+            console.log("Event not found.");
+            return [];
     }
 }
 

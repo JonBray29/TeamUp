@@ -10,12 +10,13 @@ async function createTeam(teamName, email){
 async function createNewUser(teamName, email, notification){
     let team = await teamModel.findOne({ name: teamName });
     let newUser = { email: email, type: "Standard", accepted: false };
-    let admin = team.users.find(user => user.type == "Admin");
 
     await teamModel.updateOne(
         { name: teamName },
         { $push: { users: newUser }}
     )
+    let admin = team.users.find(user => user.type == "Admin");
+
     admin.notifications.push(notification);
     let tempNotification = admin.notifications.find(notification => notification == notification);
     await team.save();
@@ -57,19 +58,10 @@ async function createNewTask(task, teamId){
     return newTask;
 }
 async function createNewNotification(notification, teamId, email){
-    notification.userEmail = email;
-    notification._id = mongoose.Types.ObjectId();
-
-    let team = await teamModel.findOne({ _id: teamId });
-    let data = [];
-    team.users.forEach(async function(user){
-        if(user.email != notification.userEmail){
-            user.notifications.push(notification);
-            await team.save();
-            data.push({email: user.email, notification: notification});
-        }
-    });
-    return data;
+    let team = await findTeam(teamId);
+    let user = team.users.find(user => user.email == email);
+    user.notifications.push(notification);
+    await team.save();
 }
 //Database read functions
 async function findUserInCredentials(email){
@@ -80,7 +72,7 @@ async function findTeam(teamId){
 }
 //Database update functions
 async function acceptUser(teamId, email, id){
-    let team = findTeam(teamId);
+    let team = await findTeam(teamId);
     let user = team.users.find(user => user.email == email);
     let notification = user.notifications.find(notification => notification._id == id);
     let tempUser = team.users.find(user => user.email == notification.userEmail);
@@ -89,90 +81,89 @@ async function acceptUser(teamId, email, id){
     await team.save();
 }
 async function updateEvent(teamId, event){
-    let team = findTeam(teamId);
+    let team = await findTeam(teamId);
+    let tempEvent;
+    
     switch(event.type){
         case "Holiday":
-            team.holidays.forEach(function(e){
-                if(e._id == event.id){
-                    e.title = event.title;
-                    e.start = event.start;
-                    e.end = event.end;
-                }
-            });
+            tempEvent = team.holidays.find(e => e._id == event.id);
+            tempEvent.title = event.title;
+            tempEvent.start = event.start;
+            tempEvent.end = event.end;
             await team.save();
-            return team.holidays;
+        break;
         case "Meeting":
-            team.meetings.forEach(function(e){
-                if(e._id == event.id){
-                    e.title = event.title;
-                    e.start = event.start;
-                    e.end = event.end;
-                }
-            });
+            tempEvent = team.meetings.find(e => e._id == event.id);
+            tempEvent.title = event.title;
+            tempEvent.start = event.start;
+            tempEvent.end = event.end;
             await team.save();
-            return team.meetings;
+        break;
         case "Milestone":
-            team.milestones.forEach(function(e){
-                if(e._id == event.id){
-                    e.title = event.title;
-                    e.start = event.start;
-                    e.end = event.end;
-                }
-            });
+            tempEvent = team.milestones.find(e => e._id == event.id);
+            tempEvent.title = event.title;
+            tempEvent.start = event.start;
+            tempEvent.end = event.end;
             await team.save();
-            return team.milestones;
+        break;
         default: 
             console.log("Event not found.");
-            return [];
     }
 }
 //Database delete functions
 async function deleteUser(teamId, email, id){
-    let team = findTeam(teamId);
+    let team = await findTeam(teamId);
     let user = team.users.find(user => user.email == email);
     let notification = user.notifications.find(notification => notification._id == id);
     team.users = team.users.filter(user => user.email != notification.userEmail);
     user.notifications = user.notifications.filter(notification => notification._id != id);
     await team.save();
 
-    deleteUserCredentials(notification.userEmail);
+    return notification.userEmail;
 }
 async function deleteUserCredentials(userEmail){
     await credentialModel.deleteOne({ email: userEmail });
 }
 async function deleteNotification(teamId, email, id){
-    let team = findTeam(teamId);
+    let team = await findTeam(teamId);
     let user = team.users.find(user => user.email == email);
     user.notifications = user.notifications.filter(notification => notification._id != id);
     await team.save();
 }
 async function deleteTask(teamId, id){
-    let team = findTeam(teamId);
-    team.tasks = team.tasks.filter(task => task._id != id);
-    await team.save();
+    await teamModel.updateOne(
+        { _id: teamId },
+        { $pull: { tasks: { _id: id } }}
+    )
 }
-async function deleteEvent(teamId, event){
-    let team = findTeam(teamId);
-    switch(event.type){
+async function deleteEvent(teamId, id, type){
+    switch(type){
         case "Holiday":
-            team.holidays = team.holidays.filter(e => e._id != event.id);
-            await team.save();
-            return team.holidays;
+            await teamModel.updateOne(
+                { _id: teamId },
+                { $pull: { holidays: { _id: id } }}
+            )
+            break;
         case "Meeting":
-            team.meetings = team.meetings.filter(e => e._id != event.id);
-            await team.save()
-            return team.meetings;
+            await teamModel.updateOne(
+                { _id: teamId },
+                { $pull: { meetings: { _id: id } }}
+            )
+            break;
         case "Milestone":
-            team.milestones = team.milestones.filter(e => e._id != event.id);
-            await team.save()
-            return team.milestones;
+            await teamModel.updateOne(
+                { _id: teamId },
+                { $pull: { milestones: { _id: id } }}
+            )
+            break;
         case "Time":
-            team.times = team.times.filter(e => e._id != event.id);
-            await team.save()
-            return team.times;
+            await teamModel.updateOne(
+                { _id: teamId },
+                { $pull: { times: { _id: id } }}
+            )
+            break;
         default: 
             console.log("Event not found.");
-            return [];
     }
 }
 module.exports.createTeam = createTeam;
