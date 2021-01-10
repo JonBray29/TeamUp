@@ -67,7 +67,7 @@ app.post("/login", async function(req, res){
     let email = req.body.email;
     let password = req.body.password;
 
-    let teamUser = controller.findUserInCredentials(email);
+    let teamUser = await controller.findUserInCredentials(email);
     if(!teamUser){
         return res.json({ status: 400, message: "incorrectEmail"});
     }
@@ -75,8 +75,8 @@ app.post("/login", async function(req, res){
         return res.json({ status: 400, message: "incorrectPassword" });
     }
     else{
-        let team = controller.findTeam(teamUser.teamId);
-        let user = team.users.find(user => user.email == email);
+        let team = await controller.findTeam(teamUser.teamId);
+        let user = await team.users.find(user => user.email == email);
 
         if(user.accepted){
             return res.json({
