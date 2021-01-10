@@ -195,6 +195,5 @@ function getEventArray(type, teamId){
 }
 
 module.exports.sendNotification = sendNotification;
-module.exports.app = app;
 
 server.listen(process.env.PORT || port);
