@@ -117,8 +117,8 @@ io.on('connection', function(socket){
     socket.on('disconnect', function(reason){
         socketMap.delete(socketData.email);
     });
-    socket.on('New Task', function(task){
-        let newTask = controller.createNewTask(task, socketData.teamId);
+    socket.on('New Task', async function(task){
+        let newTask = await controller.createNewTask(task, socketData.teamId);
 
         io.in(socketData.teamId).emit('Send Task', newTask);
     });
@@ -134,25 +134,25 @@ io.on('connection', function(socket){
             }
         });
     })
-    socket.on('Accept User', function(id){
-        controller.acceptUser(socketData.teamId, socketData.email, id);
+    socket.on('Accept User', async function(id){
+        await controller.acceptUser(socketData.teamId, socketData.email, id);
     });
     socket.on('Reject User', async function(id){
         let email = await controller.deleteUser(socketData.teamId, socketData.email, id);
         controller.deleteUserCredentials(email);
     });
-    socket.on('Remove', function(data){
+    socket.on('Remove', async function(data){
         if(data.type == "Notification"){
             controller.deleteNotification(socketData.teamId, socketData.email, data.id);
         }
         else if(data.type == "Task"){
-            controller.deleteTask(socketData.teamId, data.id);
+            await controller.deleteTask(socketData.teamId, data.id);
 
             socket.to(socketData.teamId).emit('Remove Task', data.id);
         }
     });
-    socket.on('Send Event', function(event){
-        controller.createNewEvent(socketData.teamId, event);
+    socket.on('Send Event', async function(event){
+        await controller.createNewEvent(socketData.teamId, event);
 
         socket.to(socketData.teamId).emit('New Event', event);
     });
