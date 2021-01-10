@@ -34,4 +34,4 @@ credentialSchema.pre('save', function(next){
     });
 });
 
-module.exports= mongoose.model("Credentials", credentialSchema);
+module.exports = mongoose.model("Credentials", credentialSchema);
