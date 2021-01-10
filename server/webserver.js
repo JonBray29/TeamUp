@@ -122,12 +122,12 @@ io.on('connection', function(socket){
 
         io.in(socketData.teamId).emit('Send Task', newTask);
     });
-    socket.on('New Notification', function(notification) {
+    socket.on('New Notification', async function(notification) {
         notification.userEmail = socketData.email;
         notification._id = mongoose.Types.ObjectId();
 
         let team = await controller.findTeam(socketData.teamId);
-        team.users.forEach(function(user) {
+        team.users.forEach(async function(user) {
             if(user.email != socketData.email) {
                 await controller.createNewNotification(notification, socketData.teamId, user.email);
                 sendNotification(user.email, notificaiton);
@@ -137,7 +137,7 @@ io.on('connection', function(socket){
     socket.on('Accept User', function(id){
         controller.acceptUser(socketData.teamId, socketData.email, id);
     });
-    socket.on('Reject User', function(id){
+    socket.on('Reject User', async function(id){
         let email = await controller.deleteUser(socketData.teamId, socketData.email, id);
         controller.deleteUserCredentials(email);
     });
@@ -156,13 +156,13 @@ io.on('connection', function(socket){
 
         socket.to(socketData.teamId).emit('New Event', event);
     });
-    socket.on('Update Event', function(event){
+    socket.on('Update Event', async function(event){
         await controller.updateEvent(socketData.teamId, event);
         
         let array = getEventArray(event.type, socketData.teamId);
         io.in(socketData.teamId).emit('Updated Event', { type: event.type, array: array });
     });
-    socket.on('Delete Event', function(event){
+    socket.on('Delete Event', async function(event){
         await controller.deleteEvent(socketData.teamId, event.id, event.type);
 
         let array = getEventArray(event.type, socketData.teamId);
@@ -176,7 +176,7 @@ function sendNotification(email, notification){
     }
 }
 
-function getEventArray(type, teamId){
+async function getEventArray(type, teamId){
     let team = await findTeam(teamId);
 
     switch(type){
