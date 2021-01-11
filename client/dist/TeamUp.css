@@ -16,6 +16,11 @@ body {
     background-size: cover;
     background-position: center center;
 }
+#teamNameDiv{
+    position: absolute;
+    top: 2vh;
+    font-size: 2vw;
+}
 #time {
     font-size: 10vw;
 }

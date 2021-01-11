@@ -388,7 +388,8 @@ $(function(){
                     setEmail($("#login-email").val());
                 }
                 handleArrays(res);
-                openSocket(res);               
+                openSocket(res);  
+                showTeamName(res.name)             
                 $("#login-modal").iziModal("close");
             }
             else if(res.status == 400){
@@ -479,6 +480,9 @@ $(function(){
             let title = "<h1>" + "New Request: " + notification.userEmail + "</h1>";
             $("#notifications-dialog").find("section").prepend("<div id='" + id + "'>" + title + time + reject + accept + "</div>");
         }
+    }
+    function showTeamName(name){
+        $("#teamNameDiv").text("Team: " + name);
     }
     //Update calendar with new/updated event arrays
     function refreshCalendar() {

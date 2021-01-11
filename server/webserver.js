@@ -80,6 +80,7 @@ app.post("/login", async function(req, res){
         if(user.accepted){
             return res.json({
                 status: 200, 
+                name: team.name,
                 teamId: team._id,
                 tasks: team.tasks,
                 meetings: team.meetings,
