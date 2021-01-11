@@ -23,7 +23,6 @@ app.use(cors());
 //Connect to db
 mongoose.connect(dbUrl, { useUnifiedTopology: true, useNewUrlParser: true });
 
-
 //Create team post request
 app.post("/createTeam", async function(req, res){
     let teamName = req.body.teamName;
@@ -44,10 +43,12 @@ app.post("/createTeam", async function(req, res){
 });
 //Join team post request
 app.post("/joinTeam", async function(req, res){
+    console.log("hi");
     let teamName = req.body.teamName;
     let email = req.body.email;
     let pass = req.body.pass;
     let notification = req.body.notification;
+    console.log("h");
 
     if(await credentialModel.countDocuments({ email: email }) != 0){
         return res.json({ status: 400, message: "email" });
@@ -57,8 +58,8 @@ app.post("/joinTeam", async function(req, res){
     }
     else{
         let data = await controller.createNewUser(teamName, email, notification);
-        sendNotification(admin.email, data.notification);
         controller.createCredentials(email, pass, data.teamId);
+        sendNotification(data.adminEmail, data.notification);
         return res.json({ status: 200 });
     }
 });

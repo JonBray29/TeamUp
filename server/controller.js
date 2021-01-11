@@ -10,20 +10,18 @@ async function createTeam(teamName, email){
 async function createNewUser(teamName, email, notification){
     let team = await teamModel.findOne({ name: teamName });
     let newUser = { email: email, type: "Standard", accepted: false };
+    let admin = team.users.find(user => user.type == "Admin");
 
     await teamModel.updateOne(
         { name: teamName },
         { $push: { users: newUser }}
     )
-    let admin = team.users.find(user => user.type == "Admin");
 
     admin.notifications.push(notification);
     let tempNotification = admin.notifications.find(notification => notification == notification);
     await team.save();
 
-    return { notification: tempNotification, teamId: team._id };
-
-
+    return { notification: tempNotification, teamId: team._id, adminEmail: admin.email };
 }
 async function createCredentials(email, pass, team){
     let credential = new credentialModel({ email: email, password: pass, teamId: team });
