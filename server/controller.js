@@ -20,7 +20,6 @@ async function createNewUser(teamName, email, notification){
     admin.notifications.push(notification);
     let tempNotification = admin.notifications.find(notification => notification == notification);
     await team.save();
-
     return { notification: tempNotification, teamId: team._id, adminEmail: admin.email };
 }
 async function createCredentials(email, pass, team){

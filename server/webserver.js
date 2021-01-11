@@ -43,12 +43,10 @@ app.post("/createTeam", async function(req, res){
 });
 //Join team post request
 app.post("/joinTeam", async function(req, res){
-    console.log("hi");
     let teamName = req.body.teamName;
     let email = req.body.email;
     let pass = req.body.pass;
     let notification = req.body.notification;
-    console.log("h");
 
     if(await credentialModel.countDocuments({ email: email }) != 0){
         return res.json({ status: 400, message: "email" });
