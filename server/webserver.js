@@ -129,7 +129,7 @@ io.on('connection', function(socket){
         team.users.forEach(async function(user) {
             if(user.email != socketData.email) {
                 await controller.createNewNotification(notification, socketData.teamId, user.email);
-                sendNotification(user.email, notificaiton);
+                sendNotification(user.email, notification);
             }
         });
     })
