@@ -63,7 +63,7 @@ $(function(){
     //Global variables
     var socket;
     var calendar;
-    var uriPrefix = "http://localhost:9000" || "https://teamuphub.herokuapp.com";
+    var uriPrefix = "https://teamuphub.herokuapp.com";
     var timer = new easytimer.Timer();
     const observer = new MutationObserver(function(){
         $("#notifications-dialog").trigger("mutated");
